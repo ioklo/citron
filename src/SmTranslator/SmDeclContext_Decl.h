@@ -1,6 +1,6 @@
 #pragma once
 #include <concepts>
-#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "SmDeclContext.h"
 
 namespace Citron {
@@ -19,8 +19,8 @@ class SmDeclContext_Decl : public SmDeclContext
     RTypeArguments* typeArgs;
 
 public:
-    SmDeclContext_Decl(TakeRef<SmDeclContextPtr> outer, TRDecl* decl, RTypeArguments* typeArgs)
-        : outer{outer.Take()}, decl{decl}, typeArgs{typeArgs}
+    SmDeclContext_Decl(InRefPtr<SmDeclContext> outer, TRDecl* decl, RTypeArguments* typeArgs)
+        : outer{outer.Share()}, decl{decl}, typeArgs{typeArgs}
     {
     }
 

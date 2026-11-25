@@ -52,6 +52,8 @@ public:
     TakeRef& operator=(const TakeRef&) = delete;
     TakeRef& operator=(TakeRef&& other)
     {
+        if (this == &other) return *this;
+        
         this->ptr = other.ptr;
         this->movable = other.movable;
 

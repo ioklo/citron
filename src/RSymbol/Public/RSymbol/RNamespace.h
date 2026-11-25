@@ -2,6 +2,7 @@
 #include <variant>
 #include <memory>
 #include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RNamespaceDeclContainerComponent.h"
 #include "RTypeDeclContainerComponent.h"
 #include "RFuncDeclContainerComponent.h"
@@ -44,8 +45,8 @@ class RNamespace : public RDecl
     RFactoryPtr rFactory;
 
 public:
-    RNamespace(RDeclKey&& key, RNamespaceKind&& kind, TakeRef<RFactoryPtr> rFactory)
-        : key{std::move(key)}, kind{std::move(kind)}, rFactory{rFactory.Take()} 
+    RNamespace(RDeclKey&& key, RNamespaceKind&& kind, InRefPtr<RFactory> rFactory)
+        : key{std::move(key)}, kind{std::move(kind)}, rFactory{rFactory.Share()} 
     {}
 
     RName& GetName() { return kind.GetName(); }

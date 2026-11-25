@@ -16,6 +16,9 @@
 using namespace std;
 
 namespace Citron {
+
+using SmDeclContextPtr = shared_ptr<class SmDeclContext>;
+
 namespace {
 
 class SmTraitFuncTask
@@ -29,7 +32,7 @@ class SmTraitFuncTask
     RFactoryPtr rFactory;
 
 public:
-    SmTraitFuncTask(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory);
+    SmTraitFuncTask(InRefPtr<SmDeclContext> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRefPtr<RFactory> rFactory);
 
 public: // from ISmPhase4Task
     std::expected<void, DiagPtr> RunPhase4(SmPhase4Context& context) override;
@@ -40,15 +43,15 @@ public: // from ISmPhase4Task
 
 namespace Citron {
 
-void SmTranslateTraitFunc(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateTraitFunc(InRefPtr<SmDeclContext> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
-    phaseManager.AddTask<SmTraitFuncTask>(move(traitDeclContext), rTraitDecl, sTraitFuncDecl, move(rFactory));
+    phaseManager.AddTask<SmTraitFuncTask>(traitDeclContext, rTraitDecl, sTraitFuncDecl, rFactory);
 }
 
 namespace {
 
-SmTraitFuncTask::SmTraitFuncTask(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory)
-    : traitDeclContext{*traitDeclContext}, rTraitDecl{rTraitDecl}, sTraitFuncDecl{sTraitFuncDecl}, rFactory{*rFactory}
+SmTraitFuncTask::SmTraitFuncTask(InRefPtr<SmDeclContext> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRefPtr<RFactory> rFactory)
+    : traitDeclContext{traitDeclContext.Share()}, rTraitDecl{rTraitDecl}, sTraitFuncDecl{sTraitFuncDecl}, rFactory{rFactory.Share()}
 {
 }
 

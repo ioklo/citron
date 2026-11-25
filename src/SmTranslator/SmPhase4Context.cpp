@@ -23,8 +23,8 @@ using namespace std;
 
 namespace Citron {
 
-SmPhase4Context::SmPhase4Context(TakeRef<RFactoryPtr> rFactory)
-    : rFactory{rFactory.Take()}
+SmPhase4Context::SmPhase4Context(InRefPtr<RFactory> rFactory)
+    : rFactory{rFactory.Share()}
 {
 }
 

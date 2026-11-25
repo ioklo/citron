@@ -163,7 +163,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
 } // namespace
 
-expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory)
+expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, InRefPtr<RFactory> rFactory, InRefPtr<QFactory> qFactory)
 {
     std::vector<QFuncBody> qFuncBodies;
     auto mFuncBodies = mData->GetAllFuncBodies();
@@ -171,13 +171,13 @@ expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, TakeRef<RFactoryPt
     qFuncBodies.reserve(mFuncBodies.size());
     for (auto& mFuncBody : mFuncBodies)
     {
-        auto e_qFuncBody = TranslateMFuncBodyToQFuncBody(mFuncBody, *rFactory, *qFactory);
+        auto e_qFuncBody = TranslateMFuncBodyToQFuncBody(mFuncBody, rFactory, qFactory);
         RETURN_ON_ERROR(e_qFuncBody);
 
         qFuncBodies.push_back(move(*e_qFuncBody));
     }
 
-    return (*qFactory)->MakeQData(move(qFuncBodies));
+    return qFactory->MakeQData(move(qFuncBodies));
 }
 
 } // namespace Citron

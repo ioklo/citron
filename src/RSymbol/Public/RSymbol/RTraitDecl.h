@@ -2,6 +2,7 @@
 #include "RSymbolConfig.h"
 #include <memory>
 #include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
 #include "RTypeDeclOuter.h"
@@ -20,13 +21,13 @@ class RTraitDecl : public RDecl, public RTypeDecl
     RDeclKey key;
     RTypeDeclOuter outer;
     RName name;
-    std::vector<RTraitMemberDecl> members;
-
-    RGenericsComponent genericsComp;
     RFactoryPtr rFactory;
 
+    std::vector<RTraitMemberDecl> members{};
+    RGenericsComponent genericsComp{};
+
 public:
-    RSYMBOL_API RTraitDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RTraitDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory);
     RSYMBOL_API void InitTypeParams(std::vector<RTypeParam*>&& typeParams);
     RSYMBOL_API void AddMember(RTraitMemberDecl&& decl);
     std::span<RTraitMemberDecl> GetMembers() { return members; }

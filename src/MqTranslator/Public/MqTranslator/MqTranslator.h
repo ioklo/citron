@@ -1,5 +1,6 @@
 #pragma once
 #include "MqTranslatorConfig.h"
+#include "Infra/RefPtr.h"
 #include "QIR/QData.h"
 #include "QIR/QFuncBody.h"
 
@@ -10,10 +11,10 @@ namespace Citron {
 
 struct MFuncBody;
 class MData;
-using RFactoryPtr = std::shared_ptr<class RFactory>;
-using QFactoryPtr = std::shared_ptr<class QFactory>;
+class RFactory;
+class QFactory;
 using DiagPtr = std::shared_ptr<struct Diag>;
 
-MQTRANSLATOR_API std::expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory);
+MQTRANSLATOR_API std::expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, InRefPtr<RFactory> rFactory, InRefPtr<QFactory> qFactory);
 
 }

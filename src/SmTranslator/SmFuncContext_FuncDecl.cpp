@@ -13,8 +13,8 @@ using namespace std;
 
 namespace Citron {
 
-SmFuncContext_FuncDecl::SmFuncContext_FuncDecl(TakeRef<SmDeclContextPtr> funcDeclContext, RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory)
-    : funcDeclContext{funcDeclContext.Take()}, rFuncDecl{rFuncDecl}, bSeqFunc{bSeqFunc}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
+SmFuncContext_FuncDecl::SmFuncContext_FuncDecl(InRefPtr<SmDeclContext> funcDeclContext, RFuncDecl* rFuncDecl, bool bSeqFunc, InRefPtr<RFactory> rFactory, InRefPtr<MFactory> mFactory)
+    : funcDeclContext{funcDeclContext.Share()}, rFuncDecl{rFuncDecl}, bSeqFunc{bSeqFunc}, rFactory{rFactory.Share()}, mFactory{mFactory.Share()}
 {
 }
 

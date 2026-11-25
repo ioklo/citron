@@ -35,8 +35,8 @@ class StructCtorTask
     RFactoryPtr rFactory;
 
 public:
-    StructCtorTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, InRef<RFactoryPtr> rFactory)
-        : structDeclContext{*structDeclContext}, rStruct{rStruct}, sStructCtor{sStructCtor}, rStructCtor{nullptr}, rFactory{*rFactory}
+    StructCtorTask(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, InRefPtr<RFactory> rFactory)
+        : structDeclContext{structDeclContext.Share()}, rStruct{rStruct}, sStructCtor{sStructCtor}, rStructCtor{nullptr}, rFactory{rFactory.Share()}
     {
     }
 
@@ -50,7 +50,7 @@ public:
 
 namespace Citron {
 
-void SmTranslateStructCtor(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateStructCtor(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     phaseManager.AddTask<StructCtorTask>(structDeclContext, rStruct, sStructCtor, rFactory);
 }

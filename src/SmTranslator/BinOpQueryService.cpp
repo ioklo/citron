@@ -52,7 +52,7 @@ BinOpQueryService::BinOpQueryService(RFactory& factory)
     });
 }
 
-const std::vector<BinOpInfo>& BinOpQueryService::GetInfos(SBinaryOpKind kind)
+std::span<BinOpInfo> BinOpQueryService::GetInfos(SBinaryOpKind kind)
 {
     static std::vector<BinOpInfo> empty;
 

@@ -16,6 +16,9 @@
 using namespace std;
 
 namespace Citron {
+
+using SmDeclContextPtr = shared_ptr<class SmDeclContext>;
+
 namespace {
 
 class SmEnumElemVarTranslator
@@ -28,8 +31,8 @@ class SmEnumElemVarTranslator
     RFactoryPtr rFactory;
 
 public:
-    SmEnumElemVarTranslator(InRef<SmDeclContextPtr> enumElemDeclContext, REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, InRef<RFactoryPtr> rFactory)
-        : enumElemDeclContext{*enumElemDeclContext}, rEnumElemVar{rEnumElemVar}, sEnumElemVar{sEnumElemVar}, rFactory{*rFactory}
+    SmEnumElemVarTranslator(InRefPtr<SmDeclContext> enumElemDeclContext, REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, InRefPtr<RFactory> rFactory)
+        : enumElemDeclContext{enumElemDeclContext.Share()}, rEnumElemVar{rEnumElemVar}, sEnumElemVar{sEnumElemVar}, rFactory{rFactory.Share()}
     {
     }
 
@@ -41,10 +44,10 @@ public:
 
 namespace Citron {
 
-void SmTranslateEnumElemVar(InRef<SmDeclContextPtr> enumElemDeclContext, SEnumElemVarDecl* sEnumElemVar, REnumElemDecl* rEnumElem, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateEnumElemVar(InRefPtr<SmDeclContext> enumElemDeclContext, SEnumElemVarDecl* sEnumElemVar, REnumElemDecl* rEnumElem, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     RName elemVarName{RName::Normal(sEnumElemVar->name)};
-    auto* rEnumElemVar = (*rFactory)->MakeDecl<REnumElemVarDecl>(RDeclKey::Normal(elemVarName), rEnumElem, move(elemVarName));
+    auto* rEnumElemVar = rFactory->MakeDecl<REnumElemVarDecl>(RDeclKey::Normal(elemVarName), rEnumElem, move(elemVarName));
 
     phaseManager.AddTask<SmEnumElemVarTranslator>(enumElemDeclContext, rEnumElemVar, sEnumElemVar, rFactory);
 }

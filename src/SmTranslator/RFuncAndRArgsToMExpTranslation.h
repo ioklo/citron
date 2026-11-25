@@ -4,7 +4,6 @@
 #include <vector>
 #include <expected>
 
-#include "Logging/Diag.h"
 #include "MIR/MArgument.h"
 #include "RSymbol/RFuncDecl.h"
 
@@ -14,6 +13,7 @@ class RTypeArguments;
 struct MStmt;
 struct MLoc;
 struct SmTranslationContexts;
+using DiagPtr = std::shared_ptr<struct Diag>;
 
 std::expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, std::vector<MArgument>&& args, SmTranslationContexts& contexts);
 

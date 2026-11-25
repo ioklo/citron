@@ -22,20 +22,20 @@ using namespace std;
 namespace Citron {
 
 SmScopeContext::SmScopeContext(
-    const SmFuncContextPtr& funcContext, 
-    const SmScopeContextPtr& parentContext, 
+    InRefPtr<SmFuncContext> funcContext, 
+    InRefPtr<SmScopeContext> parentContext, 
     MScopeKind&& scopeKind, 
     optional<size_t> curContinueLabelId, 
     optional<size_t> curBreakLabelId, 
     shared_ptr<InlineScopeContext> inlineScopeContext,
-    TakeRef<RFactoryPtr> rFactory)
-    : funcContext{funcContext}
-    , parentContext{parentContext}
+    InRefPtr<RFactory> rFactory)
+    : funcContext{funcContext.Share()}
+    , parentContext{parentContext.Share()}
     , scopeKind{std::move(scopeKind)}
     , curContinueLabelId{curContinueLabelId}
     , curBreakLabelId{curBreakLabelId}
     , inlineScopeContext{move(inlineScopeContext)}
-    , rFactory{rFactory.Take()}
+    , rFactory{rFactory.Share()}
 {
 }
 

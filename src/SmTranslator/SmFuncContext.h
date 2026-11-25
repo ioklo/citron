@@ -67,14 +67,14 @@ private: // transaction
 
 public:
     SmFuncContext();
-    RLambdaVarDecl* StageLambdaVar(RType* type, TakeRef<RName> name, MArgument&& arg);
+    RLambdaVarDecl* StageLambdaVar(RType* type, RName&& name, MArgument&& arg);
 
     void BeginTransaction();
     void CommitTransaction();
     void RollbackTransaction();
 
     size_t AddNewLabelId(std::optional<std::string>& o_label);
-    std::optional<size_t> GetLabelId(const std::string& label);
+    std::optional<size_t> GetLabelId(std::string_view label);
 
     virtual void BeginTransaction_FuncContext() = 0;
     virtual void CommitTransaction_FuncContext() = 0;

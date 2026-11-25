@@ -2,6 +2,7 @@
 
 #include "Infra/Expected.h"
 #include "Infra/Ptr.h"
+#include "Infra/RefPtr.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RGlobalFuncDecl.h"
 #include "RSymbol/RNamespace.h"
@@ -37,8 +38,8 @@ class SmGlobalFuncTask
     RGlobalFuncDecl* rFuncDecl;
 
 public:
-    SmGlobalFuncTask(InRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* syntax, RNamespace* rOuter, InRef<RFactoryPtr> rFactory)
-        : outerDeclContext{*outerDeclContext}, syntax{syntax}, rOuter{rOuter}, rFactory{*rFactory}, rFuncDecl{nullptr}
+    SmGlobalFuncTask(InRefPtr<SmDeclContext> outerDeclContext, SGlobalFuncDecl* syntax, RNamespace* rOuter, InRefPtr<RFactory> rFactory)
+        : outerDeclContext{outerDeclContext.Share()}, syntax{syntax}, rOuter{rOuter}, rFactory{rFactory.Share()}, rFuncDecl{nullptr}
     {
     }
 
@@ -51,9 +52,9 @@ public:
 
 namespace Citron {
 
-void SmTranslateGlobalFunc(InRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* syntax, RNamespace* outer, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateGlobalFunc(InRefPtr<SmDeclContext> outerDeclContext, SGlobalFuncDecl* syntax, RNamespace* outer, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
-    phaseManager.AddTask<SmGlobalFuncTask>(move(outerDeclContext), syntax, outer, rFactory);
+    phaseManager.AddTask<SmGlobalFuncTask>(outerDeclContext, syntax, outer, rFactory);
 }
 
 namespace {

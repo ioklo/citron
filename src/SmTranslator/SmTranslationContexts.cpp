@@ -30,19 +30,19 @@ expected<RTypeArguments*, DiagPtr> SmTranslationContexts::MakeRTypeArgs(std::spa
 }
 
 SmTranslationContexts MakeTranslationContexts(
-    TakeRef<SmDeclContextPtr> declContext,
+    InRefPtr<SmDeclContext> declContext,
     RFuncDecl* rFuncDecl,
     bool bSeqFunc,
-    TakeRef<LoggerPtr> logger,
-    TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SmFactoryPtr> smFactory,
-    TakeRef<BinOpQueryServicePtr> binOpQueryService)
+    InRefPtr<Logger> logger,
+    InRefPtr<RFactory> rFactory, InRefPtr<MFactory> mFactory, InRefPtr<SmFactory> smFactory,
+    InRefPtr<BinOpQueryService> binOpQueryService)
 {
     auto globalContext = MakePtr<SmGlobalContext>();
-    auto funcContext = MakePtr<SmFuncContext_FuncDecl>(declContext.Take(), rFuncDecl, bSeqFunc, *rFactory, *mFactory);
-    auto scopeContext = MakePtr<SmScopeContext>(funcContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, *rFactory);
+    SmFuncContextPtr funcContext = MakePtr<SmFuncContext_FuncDecl>(declContext, rFuncDecl, bSeqFunc, rFactory, mFactory);
+    auto scopeContext = MakePtr<SmScopeContext>(funcContext, /*parentContext*/shared_ptr<SmScopeContext>{}, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, rFactory);
 
     // scopeContext에 함수 인자를 넣는다
-    auto* openTypeArgs = rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(**rFactory);
+    auto* openTypeArgs = rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(*rFactory);
     for (auto& funcParam : rFuncDecl->GetUnboundFuncParams())
     {
         if (funcParam.IsRef())
@@ -57,7 +57,7 @@ SmTranslationContexts MakeTranslationContexts(
         }
     }
 
-    return {globalContext, funcContext, scopeContext, logger.Take(), mFactory.Take(), rFactory.Take(), smFactory.Take(), binOpQueryService.Take()};
+    return {globalContext, funcContext, scopeContext, logger.Share(), mFactory.Share(), rFactory.Share(), smFactory.Share(), binOpQueryService.Share()};
 }
 
 SmTranslationContexts MakeTranslationContexts_DefaultScope(SmTranslationContexts& contexts)
@@ -102,8 +102,8 @@ tuple<size_t, SmTranslationContexts> MakeTranslationContexts_InlineScope(std::op
 
 SmTranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, vector<RFuncParameter>&& funcParams, bool bLastParamVariadic, SmTranslationContexts& contexts)
 {
-    auto newFuncContext = MakePtr<SmFuncContext_Lambda>(contexts.funcContext, contexts.scopeContext, /*bSeqFunc*/false, move(funcRet), move(funcParams), bLastParamVariadic);
-    auto newScopeContext = MakePtr<SmScopeContext>(newFuncContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, contexts.rFactory);
+    shared_ptr<SmFuncContext> newFuncContext = MakePtr<SmFuncContext_Lambda>(contexts.funcContext, contexts.scopeContext, /*bSeqFunc*/false, move(funcRet), move(funcParams), bLastParamVariadic);
+    auto newScopeContext = MakePtr<SmScopeContext>(newFuncContext, /*parentContext*/shared_ptr<SmScopeContext>{}, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, contexts.rFactory);
 
     return {contexts.globalContext, newFuncContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.smFactory, contexts.binOpQueryService};
 }

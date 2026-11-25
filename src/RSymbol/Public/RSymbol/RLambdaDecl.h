@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <memory>
 #include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
 #include "RFuncDecl.h"
@@ -32,7 +33,7 @@ class RLambdaDecl final : public RDecl, public RTypeDecl, public ImplRFuncDeclUs
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API RLambdaDecl(RFuncDecl* outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RLambdaDecl(RFuncDecl* outer, RName&& name, InRefPtr<RFactory> rFactory);
     RSYMBOL_API void InitFuncReturnAndParameters(RFuncReturn&& funcReturn, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
     RSYMBOL_API void InitVars(std::vector<RLambdaVarDecl*>&& vars);
     bool IsSeqFunc() { return commonFuncDeclComp.IsSeqFunc(); }

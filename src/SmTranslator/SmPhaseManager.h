@@ -4,7 +4,7 @@
 #include <concepts>
 #include <utility>
 #include <expected>
-#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "ISmPhaseTask.h"
 
 namespace Citron {
@@ -54,9 +54,9 @@ class SmPhaseManager
 
 public:
     SmPhaseManager(
-        TakeRef<LoggerPtr> logger, 
-        TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
-        TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
+        InRefPtr<Logger> logger, 
+        InRefPtr<RFactory> rFactory, InRefPtr<MFactory> mFactory,
+        InRefPtr<SmFactory> smFactory, InRefPtr<BinOpQueryService> binOpQueryService);
     ~SmPhaseManager();
 
     template<typename TSmPhaseTask, typename... TArgs>

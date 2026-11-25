@@ -20,7 +20,6 @@ class RClassVarDecl;
 class RStructVarDecl;
 struct MExp;
 struct MLoc;
-using MFactoryPtr = std::shared_ptr<class MFactory>;
 struct SmTranslationContexts;
 
 // Intermediate SharedRef Exp, 일반 ptr변환은 여기를 거치지 않도록 한다

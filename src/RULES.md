@@ -60,10 +60,15 @@ public:
 
 - reference parameter와 reference/value return helper를 사용한다
   - 실제 ```const T``` 객체는 사용하지 않는다.
-  - ```const T&``` parameter는 ```InRef<T>```로 쓴다.
+  - ```const std::vector<T>&``` parameter는 ```std::span<T>```로, ```const std::string&``` parameter는 ```std::string_view```로 쓴다. view는 값으로 전달한다.
+  - 그 외 ```const T&``` parameter는 ```InRef<T>```로 쓴다.
   - ```T&```와 ```T&&``` parameter는 각각 그대로 쓴다.
-  - ```const T&```와 ```T&&```를 모두 받을 수 있어야 하면 universal reference(forwarding reference)를 우선 사용하고, 복잡해지면 ```TakeRef<T>```를 쓴다.
-  - ```TakeRef<T>```를 변수에 대입할 때는 ```Take()```를 쓴다.
+  - ```TakeRef<T>```는 별도의 semantic 분류가 아니라 lvalue(```T&```)와 rvalue(```T&&```)를 모두 받아야 할 때 사용하는 도구다. forwarding reference를 우선 사용하고, 복잡해지면 ```TakeRef<T>```를 사용한다.
+  - ```TakeRef<T>```를 값으로 저장할 때는 ```Take()```를 사용한다. lvalue 입력은 복사하고 rvalue 입력은 이동한다.
+  - ```std::shared_ptr<T>```에는 ```InRef<std::shared_ptr<T>>``` / ```TakeRef<std::shared_ptr<T>>``` 대신 ```InRefPtr<T>``` / ```TakeRefPtr<T>```를 사용한다. ```(*t)->``` 대신 ```t->```로 접근한다.
+  - ```InRefPtr<T>```는 wrapper 그대로 전달하고, 소유권을 공유하여 저장할 때 ```Share()```를 호출한다. ```TakeRefPtr<T>```는 lvalue/rvalue에 따른 복사/이동이 필요할 때 사용한다.
+  - helper와 view는 원본을 소유하지 않는다. 호출 이후 보관할 때는 원본 수명을 보장하거나 소유하는 값으로 복사/이동한다.
+  - 상세 결정은 [Ref parameter 및 view 사용 규칙](../ai/notes/2026-11-25-ref-parameter-and-view-policy.md)을 참고한다.
   - 함수 return에서 ```T&```와 ```T```를 모두 허용해야 하면 ```RefOrOwn<T>```를 쓴다.
 
 - component는 private inheritance보다 member variable로 포함한다

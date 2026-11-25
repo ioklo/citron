@@ -1,11 +1,12 @@
 #pragma once
 #include <expected>
+#include <memory>
 #include <span>
-#include "Logging/Diag.h"
 #include "RSymbol/RAppliedDecl.h"
 
 namespace Citron {
 
+using DiagPtr = std::shared_ptr<struct Diag>;
 class STypeExp;
 class RTypeParam;
 class SmDeclContext;

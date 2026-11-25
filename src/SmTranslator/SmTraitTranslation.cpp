@@ -15,16 +15,16 @@ using namespace std;
 
 namespace Citron {
 
-void SmTranslateTrait(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateTrait(InRefPtr<SmDeclContext> outerDeclContext, RTypeDeclOuter outer, STraitDecl* sTrait, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     RName traitName{RName::Normal(sTrait->name)};
-    auto* rTraitDecl = (*rFactory)->MakeDecl<RTraitDecl>(RDeclKey::Normal(traitName), outer, move(traitName), *rFactory);
+    auto* rTraitDecl = rFactory->MakeDecl<RTraitDecl>(RDeclKey::Normal(traitName), outer, move(traitName), rFactory);
 
-    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rTraitDecl, sTrait->typeParams, *rFactory);
+    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rTraitDecl, sTrait->typeParams, rFactory);
     rTraitDecl->InitTypeParams(move(typeParams));
     outer.AddType(rTraitDecl);
 
-    SmDeclContextPtr traitDeclContext = MakePtr<SmDeclContext_Decl<RTraitDecl>>(*outerDeclContext, rTraitDecl, rTraitDecl->MakeOpenTypeArgs(**rFactory));
+    SmDeclContextPtr traitDeclContext = MakePtr<SmDeclContext_Decl<RTraitDecl>>(outerDeclContext, rTraitDecl, rTraitDecl->MakeOpenTypeArgs(*rFactory));
 
     for (auto& sMemberDecl : sTrait->memberDecls)
     {

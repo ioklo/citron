@@ -1,7 +1,9 @@
 # Infra/Ref.h 함수 인자 사용 규칙
 
 Date: 2026-11-06
-Status: 사용자 확정
+Status: 사용자 확정 (당시 기록)
+
+2026-11-25 보충: vector/string의 view 우선 및 shared_ptr 전용 helper 규칙은 [후속 노트](2026-11-25-ref-parameter-and-view-policy.md)와 src/RULES.md를 따른다.
 
 ## 결정
 

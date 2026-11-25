@@ -24,7 +24,7 @@ class SmImplTraitFuncTask
     RFactoryPtr rFactory;
 
 public:
-    SmImplTraitFuncTask(InRef<SmDeclContextPtr> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, InRef<RFactoryPtr> rFactory);
+    SmImplTraitFuncTask(InRefPtr<SmDeclContext> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, InRefPtr<RFactory> rFactory);
 
     std::expected<MFuncBody, DiagPtr> RunPhase7(SmPhase7Context& context) final;
 };
@@ -34,15 +34,15 @@ public:
 
 namespace Citron {
 
-void SmTranslateImplTraitFunc(InRef<SmDeclContextPtr> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateImplTraitFunc(InRefPtr<SmDeclContext> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     phaseManager.AddTask<SmImplTraitFuncTask>(outerDeclContext, rImplTraitFuncDecl, sImplTraitFuncDecl, rFactory);
 }
 
 namespace {
 
-SmImplTraitFuncTask::SmImplTraitFuncTask(InRef<SmDeclContextPtr> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, InRef<RFactoryPtr> rFactory)
-    : outerDeclContext{*outerDeclContext}, rImplTraitFuncDecl{rImplTraitFuncDecl}, sImplTraitFuncDecl{sImplTraitFuncDecl}, rFactory{*rFactory}
+SmImplTraitFuncTask::SmImplTraitFuncTask(InRefPtr<SmDeclContext> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, InRefPtr<RFactory> rFactory)
+    : outerDeclContext{outerDeclContext.Share()}, rImplTraitFuncDecl{rImplTraitFuncDecl}, sImplTraitFuncDecl{sImplTraitFuncDecl}, rFactory{rFactory.Share()}
 {
 }
 

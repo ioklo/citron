@@ -1,16 +1,14 @@
 #pragma once
-#include <memory>
-#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 
 namespace Citron {
 
 class RTraitDecl;
 class STraitFuncDecl;
 class SmPhaseManager;
+class RFactory;
+class SmDeclContext;
 
-using RFactoryPtr = std::shared_ptr<class RFactory>;
-using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
-
-void SmTranslateTraitFunc(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
+void SmTranslateTraitFunc(InRefPtr<SmDeclContext> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager);
 
 } // namespace Citron

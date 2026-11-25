@@ -47,7 +47,7 @@ RStructMemberAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessM
 }
 
 // rDecl이 아직 tree에 매달려있지 않아도 되고, 대신 baseIndex를 따로 계산할것을 요구한다
-vector<RTypeParam*> MakeTypeParams(size_t baseIndex, RDecl* rDecl, span<STypeParam> sTypeParams, InRef<RFactoryPtr> rFactory)
+vector<RTypeParam*> MakeTypeParams(size_t baseIndex, RDecl* rDecl, span<STypeParam> sTypeParams, InRefPtr<RFactory> rFactory)
 {
     assert(rDecl);
 
@@ -57,7 +57,7 @@ vector<RTypeParam*> MakeTypeParams(size_t baseIndex, RDecl* rDecl, span<STypePar
     for (size_t i = 0; i < count; i++)
     {
         auto& sTypeParam = sTypeParams[i];
-        auto* nTypeParam = (*rFactory)->MakeTypeParam(rDecl, RName_Normal{sTypeParam.name}, baseIndex + i, *rFactory);
+        auto* nTypeParam = rFactory->MakeTypeParam(rDecl, RName_Normal{sTypeParam.name}, baseIndex + i, rFactory);
         nTypeParams.push_back(nTypeParam);
     }
 

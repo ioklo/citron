@@ -3,12 +3,12 @@
 #include <memory>
 #include <expected>
 
-#include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
 #include "ReExp.h"
 
 namespace Citron {
 
+using DiagPtr = std::shared_ptr<struct Diag>;
 class RType;
 struct SmTranslationContexts;
 

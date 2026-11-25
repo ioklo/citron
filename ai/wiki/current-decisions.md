@@ -105,7 +105,7 @@ Status: current snapshot
 - QEvaluator는 backend physical behavior가 아니라 observable event trace를 보존하는 semantic reference executor다.
 
 ## Process
-- 함수 인자에는 `Infra/Ref.h`의 helper를 사용한다 (2026-11-06). 실제 `const T` 객체는 사용하지 않는다. `const T&`는 `InRef<T>`, `T&`와 `T&&`는 각각 그대로 쓴다. `const T&`와 `T&&`를 모두 받아야 하면 universal reference(forwarding reference)를 우선 사용하고, 복잡해지면 `TakeRef<T>`를 사용한다. 세부 스타일은 `../../src/RULES.md`, 결정 이력과 적용 전제는 `../notes/2026-11-06-ref-parameter-policy.md` 참고.
+- 함수 인자 규칙 (2026-11-25): 함수 인자의 `const std::vector<T>&`는 `std::span<T>`, `const std::string&`는 `std::string_view`, 그 외 `const T&`는 `InRef<T>`로 대체한다. 실제 `const T` 객체는 사용하지 않으며 `T&`와 `T&&`는 그대로 쓴다. `TakeRef<T>`는 별도의 semantic 분류가 아니라 lvalue/rvalue 입력에 따른 복사/이동을 처리하는 도구다. forwarding reference 우선 원칙은 유지한다. shared_ptr에는 `InRefPtr<T>` / `TakeRefPtr<T>`를 사용하고, InRefPtr는 그대로 전달하며 공유하여 저장할 때 `Share()`를 호출한다. 세부 스타일은 `../../src/RULES.md`, 결정 이력은 `../notes/2026-11-25-ref-parameter-and-view-policy.md` 참고.
 - 기능/버그 수정에는 관련 테스트 추가/갱신을 동반한다.
 - Windows 빌드/테스트는 `ai/process/build-test-and-generation-windows.md`를 따른다.
 - `.g.cpp`, `.g.h`는 직접 수정하지 않고 generator를 통해 갱신한다.

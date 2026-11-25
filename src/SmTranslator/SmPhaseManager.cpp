@@ -37,12 +37,12 @@ using namespace std;
 namespace Citron {
 
 SmPhaseManager::SmPhaseManager(
-    TakeRef<LoggerPtr> logger, 
-    TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
-    TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
-    : logger{logger.Take()}
-    , rFactory{rFactory.Take()}, mFactory{mFactory.Take()}, smFactory{smFactory.Take()}
-    , binOpQueryService{binOpQueryService.Take()}
+    InRefPtr<Logger> logger, 
+    InRefPtr<RFactory> rFactory, InRefPtr<MFactory> mFactory,
+    InRefPtr<SmFactory> smFactory, InRefPtr<BinOpQueryService> binOpQueryService)
+    : logger{logger.Share()}
+    , rFactory{rFactory.Share()}, mFactory{mFactory.Share()}, smFactory{smFactory.Share()}
+    , binOpQueryService{binOpQueryService.Share()}
 {}
 
 SmPhaseManager::~SmPhaseManager() = default;

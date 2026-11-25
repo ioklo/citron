@@ -4,8 +4,8 @@
 #include <span>
 #include <optional>
 #include <expected>
-
-#include "Infra/Ref.h"
+#include <memory>
+#include "Infra/RefPtr.h"
 #include "Syntax/Syntax.h"
 
 namespace Citron {
@@ -17,7 +17,7 @@ class RDecl;
 class RTypeDeclOuter;
 class RFuncReturn;
 struct RFuncParameter;
-using RFactoryPtr = std::shared_ptr<class RFactory>;
+class RFactory;
 struct SmTypeTranslationContexts;
 
 
@@ -30,7 +30,7 @@ RNamespaceMemberAccessor MakeNamespaceMemberAccessor(std::optional<SAccessModifi
 RStructMemberAccessor MakeStructMemberAccessor(std::optional<SAccessModifier> modifier);
 RClassMemberAccessor MakeClassMemberAccessor(std::optional<SAccessModifier> modifier);
 
-std::vector<RTypeParam*> MakeTypeParams(size_t baseIndex, RDecl* rDecl, std::span<STypeParam> sTypeParams, InRef<RFactoryPtr> rFactory);
+std::vector<RTypeParam*> MakeTypeParams(size_t baseIndex, RDecl* rDecl, std::span<STypeParam> sTypeParams, InRefPtr<RFactory> rFactory);
 
 std::expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, RDecl* decl, std::span<RTypeParam*> typeParams, SmTypeTranslationContexts& contexts);
 

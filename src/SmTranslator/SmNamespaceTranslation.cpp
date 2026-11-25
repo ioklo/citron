@@ -25,8 +25,8 @@ class SmNamespaceElemTranslator
     SmPhaseManager& phaseManager;
 
 public:
-    SmNamespaceElemTranslator(InRef<SmDeclContextPtr> namespaceDeclContext, RNamespace* curNS, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
-        : namespaceDeclContext{*namespaceDeclContext}, curNS{curNS}, rFactory{*rFactory}, phaseManager{phaseManager}
+    SmNamespaceElemTranslator(InRefPtr<SmDeclContext> namespaceDeclContext, RNamespace* curNS, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
+        : namespaceDeclContext{namespaceDeclContext.Share()}, curNS{curNS}, rFactory{rFactory.Share()}, phaseManager{phaseManager}
     {
     }
 
@@ -47,9 +47,9 @@ public:
 // implementations
 namespace Citron {
 
-void SmTranslateNamespace(SNamespaceDecl* elem, InRef<SmDeclContextPtr> declContext, RNamespace* curNS, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateNamespace(SNamespaceDecl* elem, InRefPtr<SmDeclContext> declContext, RNamespace* curNS, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
-    SmDeclContextPtr curDeclContext = *declContext;
+    SmDeclContextPtr curDeclContext = declContext.Share();
     RNamespace* curNamespace = curNS;
 
     for (size_t i = 0, size = elem->names.size(); i < size; i++)
@@ -59,10 +59,10 @@ void SmTranslateNamespace(SNamespaceDecl* elem, InRef<SmDeclContextPtr> declCont
         RNamespace* childNamespace = curNamespace->GetNamespace(RName::Normal(name));
         if (!childNamespace)
         {
-            childNamespace = (*rFactory)->MakeChildNamespaceDecl(curNamespace, name, *rFactory);
+            childNamespace = rFactory->MakeChildNamespaceDecl(curNamespace, name, rFactory);
             curNamespace->AddNamespace(childNamespace);
         }
-        auto childDeclContext = MakePtr<SmDeclContext_Decl<RNamespace>>(curDeclContext, childNamespace, (*rFactory)->MakeEmptyTypeArguments());
+        auto childDeclContext = MakePtr<SmDeclContext_Decl<RNamespace>>(curDeclContext, childNamespace, rFactory->MakeEmptyTypeArguments());
 
         curNamespace = childNamespace;
         curDeclContext = childDeclContext;

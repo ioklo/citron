@@ -3,20 +3,19 @@
 #include <memory>
 #include <vector>
 #include <optional>
-#include <string>
 #include <unordered_map>
 #include <expected>
 
 #include "Infra/Ref.h"
-#include "Logging/Diag.h"
+#include "Infra/RefPtr.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RNames.h"
-#include "RSymbol/RFuncReturn.h"
 #include "MIR/MScopeKind.h"
 #include "SmBodyRes.h"
 
 namespace Citron { 
 
+using DiagPtr = std::shared_ptr<struct Diag>;
 struct RFuncParameter;
 class RType;
 class RFactory;
@@ -80,13 +79,13 @@ private: // for transaction
 
 public:
     SmScopeContext(
-        const SmFuncContextPtr& funcContext, 
-        const SmScopeContextPtr& parentContext, 
+        InRefPtr<SmFuncContext> funcContext, 
+        InRefPtr<SmScopeContext> parentContext, 
         MScopeKind&& scopeKind, 
         std::optional<size_t> curContinueLabelId, 
         std::optional<size_t> curBreakLabelId, 
         std::shared_ptr<InlineScopeContext> inlineScopeContext,
-        TakeRef<RFactoryPtr> rFactory);
+        InRefPtr<RFactory> rFactory);
 
     void BeginTransaction();
     void CommitTransaction();
@@ -114,7 +113,5 @@ public:
     RType* GetInlineScopeType() { return inlineScopeContext->o_inlineScopeType; }
     void SetInlineScopeType(RType* type) { inlineScopeContext->o_inlineScopeType = type; }
 };
-
-using SmScopeContextPtr = std::shared_ptr<SmScopeContext>;
 
 } // namespace Citron

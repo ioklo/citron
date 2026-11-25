@@ -44,8 +44,8 @@ class SmStructElemTranslator
     SmPhaseManager& phaseManager;
 
 public:
-    SmStructElemTranslator(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
-        : structDeclContext{*structDeclContext}, rStruct{rStruct}, rFactory{*rFactory}, phaseManager{phaseManager}
+    SmStructElemTranslator(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStruct, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
+        : structDeclContext{structDeclContext.Share()}, rStruct{rStruct}, rFactory{rFactory.Share()}, phaseManager{phaseManager}
     {
     }
 
@@ -73,7 +73,7 @@ class SmStructTask
     SStructDecl* syntax;
 
 public:
-    SmStructTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax);
+    SmStructTask(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax);
     std::expected<void, DiagPtr> RunPhase2(SmPhase2Context& context) override;
     void RunPhase6(SmPhase6Context& context) override;
 
@@ -88,25 +88,25 @@ private:
 namespace Citron {
 
 // prepare task
-void SmTranslateStruct(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SStructDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateStruct(InRefPtr<SmDeclContext> outerDeclContext, RTypeDeclOuter outer, SStructDecl* syntax, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     RName name{RName::Normal(syntax->name)};
-    auto* rStructDecl = (*rFactory)->MakeDecl<RStructDecl>(RDeclKey::Normal(name), outer, move(name), *rFactory);
+    auto* rStructDecl = rFactory->MakeDecl<RStructDecl>(RDeclKey::Normal(name), outer, move(name), rFactory);
 
-    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rStructDecl, syntax->typeParams, *rFactory);
+    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rStructDecl, syntax->typeParams, rFactory);
     rStructDecl->InitTypeParams(move(typeParams));
     outer.AddType(rStructDecl);
 
     // TODO: RDecl::MakeOpenTypeArgs는 전체적으로 typeArgs를 다시만드는데, 이 rDecl만큼만 만들게 할 수 있을 것이다
-    auto* openTypeArgs = rStructDecl->MakeOpenTypeArgs(**rFactory);
-    SmDeclContextPtr structDeclContext = MakePtr<SmDeclContext_Decl<RStructDecl>>(*outerDeclContext, rStructDecl, openTypeArgs);
+    auto* openTypeArgs = rStructDecl->MakeOpenTypeArgs(*rFactory);
+    SmDeclContextPtr structDeclContext = MakePtr<SmDeclContext_Decl<RStructDecl>>(outerDeclContext, rStructDecl, openTypeArgs);
 
     phaseManager.AddTask<SmStructTask>(move(structDeclContext), rStructDecl, syntax);
 
     // child     
     for (auto& memberDecl : syntax->memberDecls)
     {
-        visit(SmStructElemTranslator{structDeclContext, rStructDecl, *rFactory, phaseManager}, memberDecl);
+        visit(SmStructElemTranslator{structDeclContext, rStructDecl, rFactory, phaseManager}, memberDecl);
     }
 }
 
@@ -168,8 +168,8 @@ void SmStructElemTranslator::Visit(SStructVarDecl* decl)
     SmTranslateStructVar(structDeclContext, rStruct, decl, rFactory, phaseManager);
 }
 
-SmStructTask::SmStructTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax)
-    : structDeclContext{*structDeclContext}, rStructDecl{rStructDecl}, syntax{syntax}
+SmStructTask::SmStructTask(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax)
+    : structDeclContext{structDeclContext.Share()}, rStructDecl{rStructDecl}, syntax{syntax}
 {
 }
 

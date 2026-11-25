@@ -37,8 +37,8 @@ class StructFuncTask
     RStructFuncDecl* rStructFunc;
 
 public:
-    StructFuncTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructFuncDecl* sStructFunc, InRef<RFactoryPtr> rFactory)
-        : structDeclContext{*structDeclContext}, rStruct{rStruct}, sStructFunc{sStructFunc}, rFactory{*rFactory}, rStructFunc{nullptr}
+    StructFuncTask(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStruct, SStructFuncDecl* sStructFunc, InRefPtr<RFactory> rFactory)
+        : structDeclContext{structDeclContext.Share()}, rStruct{rStruct}, sStructFunc{sStructFunc}, rFactory{rFactory.Share()}, rStructFunc{nullptr}
     {
     }
 
@@ -51,9 +51,9 @@ public:
 
 namespace Citron {
 
-void SmTranslateStructFunc(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructFuncDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateStructFunc(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStructDecl, SStructFuncDecl* syntax, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
-    phaseManager.AddTask<StructFuncTask>(*structDeclContext, rStructDecl, syntax, *rFactory);
+    phaseManager.AddTask<StructFuncTask>(structDeclContext, rStructDecl, syntax, rFactory);
 }
 
 namespace {
@@ -93,7 +93,7 @@ expected<void, DiagPtr> StructFuncTask::RunPhase4(SmPhase4Context& context)
 expected<MFuncBody, DiagPtr> StructFuncTask::RunPhase7(SmPhase7Context& context)
 {
     SmDeclContextPtr structFuncDeclContext = MakePtr<SmDeclContext_Decl<RStructFuncDecl>>(structDeclContext, rStructFunc, rStructFunc->MakeOpenTypeArgs(*rFactory));
-    return context.Translate(move(structFuncDeclContext), rStructFunc, sStructFunc->bSequence, sStructFunc->body);
+    return context.Translate(structFuncDeclContext, rStructFunc, sStructFunc->bSequence, sStructFunc->body);
 }
 
 } // namespace

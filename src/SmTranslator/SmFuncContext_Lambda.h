@@ -1,5 +1,6 @@
 #pragma once
 #include "SmFuncContext.h"
+#include "Infra/RefPtr.h"
 
 namespace Citron {
 
@@ -21,7 +22,7 @@ class SmFuncContext_Lambda : public SmFuncContext
     MFactoryPtr mFactory;
 
 public:
-    SmFuncContext_Lambda(TakeRef<SmFuncContextPtr> outerFunc, TakeRef<SmScopeContextPtr> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
+    SmFuncContext_Lambda(InRefPtr<SmFuncContext> outerFunc, InRefPtr<SmScopeContext> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
 public: // from SmFuncContext
     void BeginTransaction_FuncContext() override {}

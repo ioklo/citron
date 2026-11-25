@@ -43,8 +43,8 @@ private: // 추후에 만들어짐
     RImplTraitDecl* rImplTraitDecl;
 
 public:
-    SmImplTraitTask(SImplTraitDecl* sImplDecl, InRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, InRef<RFactoryPtr> rFactory)
-        : sImplDecl{sImplDecl}, outerDeclContext{*outerDeclContext}, rOuter{rOuter}, rImplTraitDecl{nullptr}, rFactory{*rFactory} {
+    SmImplTraitTask(SImplTraitDecl* sImplDecl, InRefPtr<SmDeclContext> outerDeclContext, RImplTraitDeclOuter rOuter, InRefPtr<RFactory> rFactory)
+        : sImplDecl{sImplDecl}, outerDeclContext{outerDeclContext.Share()}, rOuter{rOuter}, rImplTraitDecl{nullptr}, rFactory{rFactory.Share()} {
     }
 
     std::expected<void, DiagPtr> HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, SmPhase5Contexts& contexts);
@@ -61,7 +61,7 @@ public: // from ISmPhase5Task
 
 namespace Citron {
 
-void SmTranslateImplTrait(SImplTraitDecl* sImplDecl, InRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateImplTrait(SImplTraitDecl* sImplDecl, InRefPtr<SmDeclContext> outerDeclContext, RImplTraitDeclOuter rOuter, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     phaseManager.AddTask<SmImplTraitTask>(sImplDecl, outerDeclContext, rOuter, rFactory);
 }

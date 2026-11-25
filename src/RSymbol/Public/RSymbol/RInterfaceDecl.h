@@ -1,6 +1,7 @@
 #pragma once
 #include "RSymbolConfig.h"
 #include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
 #include "RTypeDeclOuter.h"
@@ -17,7 +18,7 @@ class RInterfaceDecl final : public RDecl, public RTypeDecl
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API RInterfaceDecl(RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RInterfaceDecl(RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory);
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { genericsComp.InitTypeParams(std::move(typeParams)); }
 
 public: // from RDecl

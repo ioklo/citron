@@ -21,10 +21,10 @@ using namespace std;
 namespace Citron {
 
 SmPhase7Context::SmPhase7Context(
-    TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
-    TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
-    : logger{logger.Take()}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
-    , smFactory{smFactory.Take()}, binOpQueryService{binOpQueryService.Take()}
+    InRefPtr<Logger> logger, InRefPtr<RFactory> rFactory, InRefPtr<MFactory> mFactory,
+    InRefPtr<SmFactory> smFactory, InRefPtr<BinOpQueryService> binOpQueryService)
+    : logger{logger.Share()}, rFactory{rFactory.Share()}, mFactory{mFactory.Share()}
+    , smFactory{smFactory.Share()}, binOpQueryService{binOpQueryService.Share()}
 {
 }
 
@@ -112,9 +112,9 @@ CheckEndReturnResult CheckEndReturn(RFuncDecl* rFuncDecl, vector<MStmt*>& mStmts
 
 }
 
-expected<MFuncBody, DiagPtr> SmPhase7Context::Translate(TakeRef<SmDeclContextPtr> declContext, RFuncDecl* rFuncDecl, bool bSeqFunc, std::span<SStmt*> sStmts)
+expected<MFuncBody, DiagPtr> SmPhase7Context::Translate(InRefPtr<SmDeclContext> declContext, RFuncDecl* rFuncDecl, bool bSeqFunc, std::span<SStmt*> sStmts)
 {   
-    auto tContext = MakeTranslationContexts(move(declContext), rFuncDecl, bSeqFunc, logger, rFactory, mFactory, smFactory, binOpQueryService);
+    auto tContext = MakeTranslationContexts(declContext, rFuncDecl, bSeqFunc, logger, rFactory, mFactory, smFactory, binOpQueryService);
     auto e_scope = TranslateScopedSStmtsToMStmt_Scope(sStmts, tContext);
     RETURN_ON_ERROR(e_scope);
 

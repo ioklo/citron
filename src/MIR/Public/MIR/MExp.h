@@ -179,8 +179,8 @@ struct MExp_NewEnumElem : MExp
     RAppliedDecl<REnumElemDecl> appliedDecl;
     std::vector<MArgument> args;
 
-    MExp_NewEnumElem(RAppliedDecl<REnumElemDecl>&& appliedDecl, std::vector<MArgument>&& args)
-        : appliedDecl{std::move(appliedDecl)}, args{std::move(args)}
+    MExp_NewEnumElem(TakeRef<RAppliedDecl<REnumElemDecl>> appliedDecl, std::vector<MArgument>&& args)
+        : appliedDecl{appliedDecl.Take()}, args{std::move(args)}
     { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };

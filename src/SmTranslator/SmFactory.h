@@ -7,8 +7,6 @@ namespace Citron {
 
 struct ImExp;
 struct IrExp;
-using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
-
 struct SmFactoryPrivateData;
 // ImExp, IrExp
 class SmFactory

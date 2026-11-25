@@ -1,6 +1,8 @@
 #pragma once
 #include "RSymbolConfig.h"
 #include <memory>
+#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
 #include "RNames.h"
@@ -18,7 +20,7 @@ class RTypeParam
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API RTypeParam(RDecl* owner, RName&& name, size_t globalIndex, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RTypeParam(RDecl* owner, RName&& name, size_t globalIndex, InRefPtr<RFactory> rFactory);
     RDecl* GetOwner() { return owner; }
     RName& GetName() { return name; }
     size_t GetGlobalIndex() { return globalIndex; }

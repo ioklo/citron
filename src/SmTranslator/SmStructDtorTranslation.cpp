@@ -35,7 +35,7 @@ class StructDtorTask
     RStructDtorDecl* rStructDtor;
 
 public:
-    StructDtorTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, InRef<RFactoryPtr> rFactory);
+    StructDtorTask(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, InRefPtr<RFactory> rFactory);
     std::expected<void, DiagPtr> RunPhase4(SmPhase4Context& context) override;
     std::expected<MFuncBody, DiagPtr> RunPhase7(SmPhase7Context& context) override;
 };
@@ -45,15 +45,15 @@ public:
 
 namespace Citron {
 
-void SmTranslateStructDtor(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateStructDtor(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     phaseManager.AddTask<StructDtorTask>(structDeclContext, rStruct, sStructDtor, rFactory);
 }
 
 namespace {
 
-StructDtorTask::StructDtorTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, InRef<RFactoryPtr> rFactory)
-    : structDeclContext{*structDeclContext}, rStruct{rStruct}, sStructDtor{sStructDtor}, rFactory{*rFactory}, rStructDtor{nullptr}
+StructDtorTask::StructDtorTask(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, InRefPtr<RFactory> rFactory)
+    : structDeclContext{structDeclContext.Share()}, rStruct{rStruct}, sStructDtor{sStructDtor}, rFactory{rFactory.Share()}, rStructDtor{nullptr}
 {
 }
 

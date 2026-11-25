@@ -7,7 +7,7 @@
 #include <string>
 #include <tuple>
 
-#include "Infra/Ptr.h"
+#include "Infra/RefPtr.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncReturn.h"
 #include "RSymbol/RFuncDecl.h"
@@ -37,7 +37,7 @@ using MFactoryPtr = std::shared_ptr<class MFactory>;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using LoggerPtr = std::shared_ptr<class Logger>;
 using SmFactoryPtr = std::shared_ptr<class SmFactory>;
-using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
+class SmDeclContext;
 
 using DiagPtr = std::shared_ptr<struct Diag>;
 
@@ -56,7 +56,7 @@ public:
     std::expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::span<STypeExp*> sTypeArgs);
 };
 
-SmTranslationContexts MakeTranslationContexts(TakeRef<SmDeclContextPtr> declContext, RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
+SmTranslationContexts MakeTranslationContexts(InRefPtr<SmDeclContext> declContext, RFuncDecl* rFuncDecl, bool bSeqFunc, InRefPtr<Logger> logger, InRefPtr<RFactory> rFactory, InRefPtr<MFactory> mFactory, InRefPtr<SmFactory> smFactory, InRefPtr<BinOpQueryService> binOpQueryService);
 
 SmTranslationContexts MakeTranslationContexts_DefaultScope(SmTranslationContexts& contexts);
 SmTranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, SmTranslationContexts& contexts);

@@ -1,6 +1,5 @@
 #pragma once
-#include <memory>
-#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 
 namespace Citron {
 
@@ -9,11 +8,11 @@ class REnumElemVarDecl;
 
 class SmPhaseManager;
 enum class AccessorContext;
-using RFactoryPtr = std::shared_ptr<class RFactory>;
-using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
+class RFactory;
+class SmDeclContext;
 class REnumElemDecl;
 
-void SmTranslateEnumElemVar(InRef<SmDeclContextPtr> enumElemDeclContext, SEnumElemVarDecl* sEnumElemVar, REnumElemDecl* rEnumElem, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
+void SmTranslateEnumElemVar(InRefPtr<SmDeclContext> enumElemDeclContext, SEnumElemVarDecl* sEnumElemVar, REnumElemDecl* rEnumElem, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager);
 
 } // namespace Citron
 

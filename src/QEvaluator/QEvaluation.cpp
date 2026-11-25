@@ -749,13 +749,13 @@ struct Evaluator
     }
 };
 
-bool Evaluate(QInst& inst, Environment& env, TakeRef<RFactoryPtr> rFactory)
+bool Evaluate(QInst& inst, Environment& env, InRefPtr<RFactory> rFactory)
 {
-    return visit(Evaluator{env, rFactory.Take()}, inst);
+    return visit(Evaluator{env, rFactory.Share()}, inst);
 }
 
 } // namespace 
-expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, RGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, InRef<RFactoryPtr> rFactory)
+expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, RGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, InRefPtr<RFactory> rFactory)
 {
     auto bodies = qData->GetAllBodies();
     auto i = ranges::find_if(bodies, [nEntry](QFuncBody& body) { return body.rFuncDecl == nEntry; });
@@ -782,7 +782,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, RGl
     for (size_t j = 0, count = i->slotInfos.size(); j < count; j++)
     {
         auto& slot = i->slotInfos[j];
-        size_t size = GetSize(slot.type, **rFactory);
+        size_t size = GetSize(slot.type, *rFactory);
         env.curFrame->stackPointer -= size;
         env.curFrame->slots[j].ptr = env.curFrame->stackPointer;
     }
@@ -791,7 +791,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, RGl
     {
         auto& inst = env.curFrame->ip.block->GetInst(env.curFrame->ip.index++);
 
-        bool cont = Evaluate(inst, env, *rFactory);
+        bool cont = Evaluate(inst, env, rFactory);
 
         if (!cont) break;
     }

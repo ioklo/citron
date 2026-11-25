@@ -13,8 +13,8 @@ using namespace std;
 
 namespace Citron {
 
-SmFuncContext_Lambda::SmFuncContext_Lambda(TakeRef<SmFuncContextPtr> outerFunc, TakeRef<SmScopeContextPtr> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
-    : outerFunc{outerFunc.Take()}, outerScope{outerScope.Take()}, bSeqFunc{bSeqFunc}, funcReturn{move(funcReturn)}, funcParams{move(funcParams)}, bLastParamVariadic{bLastParamVariadic}
+SmFuncContext_Lambda::SmFuncContext_Lambda(InRefPtr<SmFuncContext> outerFunc, InRefPtr<SmScopeContext> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
+    : outerFunc{outerFunc.Share()}, outerScope{outerScope.Share()}, bSeqFunc{bSeqFunc}, funcReturn{move(funcReturn)}, funcParams{move(funcParams)}, bLastParamVariadic{bLastParamVariadic}
 {
 }
 

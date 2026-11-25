@@ -275,7 +275,7 @@ optional<MArgument> TryMakeBinOpMArgument(ReExp& reExp, SmTranslationContexts& c
     unreachable();
 }
 
-optional<ReExp> TryMatchBinOp(ReExp& operand0, ReExp& operand1, RType* operandType0, RType* operandType1, const BinOpInfo& info, SmTranslationContexts& contexts)
+optional<ReExp> TryMatchBinOp(ReExp& operand0, ReExp& operand1, RType* operandType0, RType* operandType1, InRef<BinOpInfo> info, SmTranslationContexts& contexts)
 {
     // TODO: [48] CastMExp등, 시도만 하고 포인터를 버리는 경우, 메모리 누수를 막기 위해서, 지역 pool을 만들어서 flush처리, 성공시 pool merge
     // TODO: [47] CastMExp의 리턴값 수정, NBC의 암시적 Cast구현하기
@@ -286,8 +286,8 @@ optional<ReExp> TryMatchBinOp(ReExp& operand0, ReExp& operand1, RType* operandTy
     if (!e_castExp1) continue;*/
 
     // 지금은 타입이 정확히 같을 경우에만 처리하도록
-    if (operandType0 != info.operandType0) return nullopt;
-    if (operandType1 != info.operandType1) return nullopt;
+    if (operandType0 != info->operandType0) return nullopt;
+    if (operandType1 != info->operandType1) return nullopt;
 
     // 인자를 모두 읽기전용으로 생각한다 T(BC) 혹은 [in]T& (NBC)
     // operandType이 BC면, MArgument_Create{Create_BC{}}
@@ -313,7 +313,7 @@ optional<ReExp> TryMatchBinOp(ReExp& operand0, ReExp& operand1, RType* operandTy
         else if constexpr (same_as<T, BinOp_InitExp>)
             return ReExp_InitExp{contexts.mFactory->MakeMInitExp<MInitExp_CallIntrinsic>(_operator.kind, typeArgs, move(args))};
         else static_assert(false);
-    }, info._operator);
+    }, info->_operator);
 }
 
 expected<ReExp, DiagPtr> TranslateSExp_BinaryOpToReExp(SExp_BinaryOp* sExp, SmTranslationContexts& contexts)
@@ -333,7 +333,7 @@ expected<ReExp, DiagPtr> TranslateSExp_BinaryOpToReExp(SExp_BinaryOp* sExp, SmTr
     // 2. NotEqual 처리
     if (sExp->kind == SBinaryOpKind::NotEqual)
     {
-        const auto& equalInfos = contexts.binOpQueryService->GetInfos(SBinaryOpKind::Equal);
+        auto equalInfos = contexts.binOpQueryService->GetInfos(SBinaryOpKind::Equal);
 
         for (auto& info : equalInfos)
         {

@@ -7,12 +7,11 @@ using namespace std;
 
 namespace Citron {
 
-RInterfaceDecl::RInterfaceDecl(RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory)
+RInterfaceDecl::RInterfaceDecl(RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory)
     : outer{outer}
     , name{move(name)}
-    , rFactory{rFactory.Take()}
+    , rFactory{rFactory.Share()}
 {
-
 }
 
 RDeclKey& RInterfaceDecl::GetDeclKey()

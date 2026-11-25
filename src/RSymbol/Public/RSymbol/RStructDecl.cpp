@@ -8,12 +8,11 @@ using namespace std;
 
 namespace Citron {
 
-RStructDecl::RStructDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory)
+RStructDecl::RStructDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory)
     : key{std::move(key)}
     , outer{outer}
     , name{std::move(name)}
-    , trivialCtorIndex{-1}
-    , rFactory{rFactory.Take()}
+    , rFactory{rFactory.Share()}
 {
 }
 

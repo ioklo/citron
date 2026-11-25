@@ -6,10 +6,9 @@
 using namespace std;
 
 namespace Citron {
-RTraitDecl::RTraitDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory)
+RTraitDecl::RTraitDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory)
     : key{move(key)}, outer{move(outer)}, name{move(name)}
-    , rFactory{rFactory.Take()}
-    , genericsComp{}
+    , rFactory{rFactory.Share()}
 {
 }
 

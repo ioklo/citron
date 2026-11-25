@@ -1,16 +1,16 @@
 #pragma once
 #include "QlTranslatorConfig.h"
-
 #include <memory>
 #include <string>
+#include "Infra/RefPtr.h"
 
 namespace Citron {
 
 class QData;
 struct LDataImpl;
 class LContextImpl;
-using RFactoryPtr = std::shared_ptr<class RFactory>;
-using QFactoryPtr = std::shared_ptr<class QFactory>;
+class RFactory;
+class QFactory;
 
 struct LData
 {
@@ -24,7 +24,7 @@ struct LContext
     std::unique_ptr<LContextImpl> impl;
 
 public:
-    QLTRANSLATOR_API LContext(TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory);
+    QLTRANSLATOR_API LContext(InRefPtr<RFactory> rFactory, InRefPtr<QFactory> qFactory);
     QLTRANSLATOR_API ~LContext();
 };
 

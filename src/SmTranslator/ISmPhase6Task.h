@@ -1,9 +1,6 @@
 #pragma once
-#include <memory>
 
 namespace Citron {
-
-using DiagPtr = std::shared_ptr<struct Diag>;
 
 class SmPhase6Context;
 

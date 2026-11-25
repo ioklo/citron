@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <span>
 #include <unordered_map>
 #include "Syntax/Syntax.h"
 
@@ -32,7 +33,7 @@ class BinOpQueryService
 
 public:
     BinOpQueryService(RFactory& factory);
-    const std::vector<BinOpInfo>& GetInfos(SBinaryOpKind kind);
+    std::span<BinOpInfo> GetInfos(SBinaryOpKind kind);
 };
 
 using BinOpQueryServicePtr = std::shared_ptr<BinOpQueryService>;

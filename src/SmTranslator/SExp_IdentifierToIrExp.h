@@ -3,8 +3,6 @@
 #include <memory>
 #include <expected> 
 
-#include "SmBodyRes.h"
-
 namespace Citron {
 
 using DiagPtr = std::shared_ptr<struct Diag>;

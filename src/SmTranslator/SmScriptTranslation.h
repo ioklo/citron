@@ -1,14 +1,14 @@
 #pragma once
 #include <memory>
-#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 
 namespace Citron {
 
 class SScript;
 class RModule;
-using RFactoryPtr = std::shared_ptr<class RFactory>;
+class RFactory;
 class SmPhaseManager;
 
-void SmTranslateScript(SScript* sScript, RModule* rModule, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
+void SmTranslateScript(SScript* sScript, RModule* rModule, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager);
 
 } // namespace Citron

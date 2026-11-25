@@ -1,25 +1,23 @@
 #pragma once
 #include "SmTranslatorConfig.h"
 
-#include <optional>
 #include <memory>
-#include <vector>
 #include <expected>
+#include <span>
 
-#include "Infra/Ref.h"
-#include "Logging/Diag.h"
+#include "Infra/RefPtr.h"
 #include "Syntax/Syntax.h"
 
 namespace Citron {
 
+using DiagPtr = std::shared_ptr<struct Diag>;
 class SScript;
 class RModule;
 class MData;
 class EModule;
-using LoggerPtr = std::shared_ptr<class Logger>;
-using RFactoryPtr = std::shared_ptr<class RFactory>;
-using MFactoryPtr = std::shared_ptr<class MFactory>;
-using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
+class Logger;
+class RFactory;
+class MFactory;
 
 struct SmTranslationResult
 {
@@ -30,10 +28,10 @@ struct SmTranslationResult
 SMTRANSLATOR_API
 std::expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     std::string moduleName,
-    const std::vector<SScript*>& scripts, // translation units
-    const std::vector<EModule*>& referenceModules,
-    InRef<LoggerPtr> logger,
-    InRef<RFactoryPtr> rFactory,
-    InRef<MFactoryPtr> mFactory);
+    std::span<SScript*> scripts, // translation units
+    std::span<EModule*> referenceModules,
+    InRefPtr<Logger> logger,
+    InRefPtr<RFactory> rFactory,
+    InRefPtr<MFactory> mFactory);
 
 } // namespace Citron

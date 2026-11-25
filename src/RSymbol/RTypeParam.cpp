@@ -7,11 +7,11 @@ using namespace std;
 
 namespace Citron {
 
-RTypeParam::RTypeParam(RDecl* owner, RName&& name, size_t globalIndex, TakeRef<RFactoryPtr> rFactory)
+RTypeParam::RTypeParam(RDecl* owner, RName&& name, size_t globalIndex, InRefPtr<RFactory> rFactory)
     : owner{owner}
     , name{move(name)}
     , globalIndex{globalIndex}
-    , rFactory{rFactory.Take()}
+    , rFactory{rFactory.Share()}
 {
 }
 

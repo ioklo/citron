@@ -1,9 +1,10 @@
 # Current Agenda
 
 ## Topic
-SmPhaseManager 인터페이스 변경 및빌드 산출물 불일치 조사 (2026-11-24)
+SmTranslator Ref 정리 및 함수 인자 view/helper 규칙 기록 (2026-11-25)
 
 ## Current Discussion
+- 2026-11-25 확정: vector/string의 읽기 인자는 span/string_view를 우선하고 나머지는 InRef로 대체한다. shared_ptr에는 InRefPtr/TakeRefPtr를 사용한다. 사용자 보고로 SmTranslator 정리와 검토 후속 3건 반영 완료. 지침·노트 기록 완료, 후속 수정본 빌드/실행 검증은 미실행. 상세: ai/notes/2026-11-25-ref-parameter-and-view-policy.md.
 - 2026-11-24: Boolean.BinOp의 phase7Tasks.push_back 접근 위반은 SmTranslator 프로젝트만 Rebuild한 뒤 해소됐다. 오래된 obj/레이아웃 불일치가 의심되지만 일반 Build에서 갱신되지 않은 원인은 미확정이다. Ctrl+F7 후에도 정상 Build는 의존 cpp를 갱신해야 하며, 사용자 재현 시험에서는 문제가 재현되지 않았다. 다음 발생 시 Clean/Rebuild 전에 obj·tlog·빌드 로그를 보존한다. 상세: ai/notes/2026-11-24-msbuild-layout-mismatch-investigation.md.
 - 2026-11-24: phase는 번호로 식별하고 역할을 주석으로 설명한다. d2d4df79는 SmPhase2~7 정수 번호를 사용하며, 논의 예시 Phase0_1 등 소수점 표기로 재변경하기로 확정한 것은 아니다.
 - 검토 완료: SmTranslator/EvalTests x64 Debug 빌드 통과. focused EvalTests 8개 중 1개 통과, 7개 실패(이번 변경의 회귀 여부 미확인). Phase 2·3 헤더의 include guard 누락, Phase 7 헤더의 MFuncBody 선언 누락을 재현했다. 소스 수정은 미실행이며 후속 수정 사항으로 남긴다. 상세: ai/notes/2026-11-24-phase-number-naming.md.
@@ -41,7 +42,7 @@ SmPhaseManager 인터페이스 변경 및빌드 산출물 불일치 조사 (2026
 세부 순서와 acceptance test는 `ai/notes/2026-08-29-associated-type-implementation-plan.md`를 본다.
 
 ## Current Direction
-- 확정 (2026-11-06): 실제 `const T` 객체는 사용하지 않는다. 함수 인자의 `const T&`는 `InRef<T>`로 쓰고, `T&`와 `T&&`는 그대로 쓴다. `const T&`와 `T&&`를 모두 받아야 하면 universal reference(forwarding reference)를 우선 사용하고, 복잡해지면 `TakeRef<T>`를 사용한다. `src/RULES.md` 및 `ai/notes/2026-11-06-ref-parameter-policy.md` 참고.
+- 확정 (2026-11-25): 함수 인자의 `const std::vector<T>&`는 `std::span<T>`, `const std::string&`는 `std::string_view`, 그 외 `const T&`는 `InRef<T>`로 대체한다. 실제 `const T` 객체는 사용하지 않으며 `T&`와 `T&&`는 그대로 쓴다. `TakeRef<T>`는 별도의 semantic 분류가 아니라 lvalue/rvalue 입력에 따른 복사/이동을 처리하는 도구다. forwarding reference 우선 원칙은 유지한다. shared_ptr에는 `InRefPtr<T>` / `TakeRefPtr<T>`를 사용하고, InRefPtr는 그대로 전달하며 공유하여 저장할 때 `Share()`를 호출한다. `src/RULES.md` 및 `ai/notes/2026-11-25-ref-parameter-and-view-policy.md` 참고.
 - 확정 (2026-11-06): `SmPhaseManager`를 `SmTaskScheduler`로 대체하는 방안을 전면 철회하고 기존 phase 방식을 유지한다. 프로젝트에서 `cpp-async`를 제거한다. coroutine의 실익은 작고 문법적 제약을 걸기는 더 어려우며, 목표였던 세밀한 dependency 파악·추적 문제도 해결하지 못했다. 2026-11-02의 coroutine task 반환형·scheduler 진단 API 결정과 관련 후속 설계는 현재 적용 방향에서 철회한다. `ai/notes/2026-11-06-coroutine-scheduler-withdrawal.md` 참고.
 - 선언 D의 외부 계약에 노출되는 symbol S는 `Access(D) ⊆ Access(S)`를 만족해야 한다. enclosing declaration을 반영한 실제 접근 범위로 비교하며, 서로 다른 owner의 `protected`를 같은 등급으로 취급하지 않는다. 이전 C++식 private type 노출 허용 규칙을 대체한다.
 - public signature에 private type/alias를 쓰거나 public alias로 private target을 노출하는 것은 금지한다. private alias의 target이 `int`여도 public signature에는 그 alias를 쓸 수 없다. `some Trait`의 backing type과 함수 body/private 구현 멤버는 외부 계약과 구분한다.

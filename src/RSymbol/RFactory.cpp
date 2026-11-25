@@ -239,7 +239,7 @@ RFactory::~RFactory()
 {
 }
 
-RTypeParam* RFactory::MakeTypeParam(RDecl* rDecl, RName&& name, size_t index, TakeRef<RFactoryPtr> rFactory)
+RTypeParam* RFactory::MakeTypeParam(RDecl* rDecl, RName&& name, size_t index, InRefPtr<RFactory> rFactory)
 {
     auto& typeParam = privateData->typeParams.emplace_back(rDecl, move(name), index, move(rFactory));
     return &typeParam;
@@ -510,10 +510,10 @@ bool RFactory::IsListType(RType* type, RType** outItemType)
     return true;
 }
 
-RNamespace* RFactory::MakeRootNamespaceDecl(RModule* module, TakeRef<RFactoryPtr> rFactory)
+RNamespace* RFactory::MakeRootNamespaceDecl(RModule* module, InRefPtr<RFactory> rFactory)
 {
     // root namespace면
-    unique_ptr<RNamespace> newDecl{new RNamespace{RDeclKey::RootNamespace(), RNamespaceKind_Root{module}, rFactory.Take()}};
+    unique_ptr<RNamespace> newDecl{new RNamespace{RDeclKey::RootNamespace(), RNamespaceKind_Root{module}, rFactory}};
     auto pNewDecl = newDecl.get();
     decls.push_back(move(newDecl));
     return pNewDecl;
@@ -530,11 +530,11 @@ void FillIdentifierWithoutModule(RDecl* decl, string& buffer)
     buffer += key.GetValue();
 }
 
-RNamespace* RFactory::MakeChildNamespaceDecl(RNamespace* outer, string_view name, TakeRef<RFactoryPtr> rFactory)
+RNamespace* RFactory::MakeChildNamespaceDecl(RNamespace* outer, string_view name, InRefPtr<RFactory> rFactory)
 {
     assert(outer && !name.empty());
 
-    unique_ptr<RNamespace> newDecl{new RNamespace{RDeclKey::Normal(RName::Normal(string{name})), RNamespaceKind_Normal{outer, RName_Normal{string{name}}}, rFactory.Take()}};
+    unique_ptr<RNamespace> newDecl{new RNamespace{RDeclKey::Normal(RName::Normal(string{name})), RNamespaceKind_Normal{outer, RName_Normal{string{name}}}, rFactory}};
     auto pNewDecl = newDecl.get();
     decls.push_back(move(newDecl));
     return pNewDecl;

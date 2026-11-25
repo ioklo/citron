@@ -17,23 +17,23 @@ using namespace std;
 namespace Citron {
 
 // body를 만들지 않으므로 declContext를 만들지 않는다
-void SmTranslateEnum(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateEnum(InRefPtr<SmDeclContext> outerDeclContext, RTypeDeclOuter outer, SEnumDecl* sEnum, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     RName enumName{RName::Normal(sEnum->name)};
 
-    auto* rEnum = (*rFactory)->MakeDecl<REnumDecl>(RDeclKey::Normal(enumName), outer, move(enumName), *rFactory);
-    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rEnum, sEnum->typeParams, *rFactory);
+    auto* rEnum = rFactory->MakeDecl<REnumDecl>(RDeclKey::Normal(enumName), outer, move(enumName), rFactory);
+    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rEnum, sEnum->typeParams, rFactory);
     rEnum->InitTypeParams(move(typeParams));
     outer.AddType(rEnum);
 
-    SmDeclContextPtr enumDeclContext = MakePtr<SmDeclContext_Decl<REnumDecl>>(*outerDeclContext, rEnum, rEnum->MakeOpenTypeArgs(**rFactory));
-    auto* emptyTypeArgs = (*rFactory)->MakeEmptyTypeArguments();
+    SmDeclContextPtr enumDeclContext = MakePtr<SmDeclContext_Decl<REnumDecl>>(outerDeclContext, rEnum, rEnum->MakeOpenTypeArgs(*rFactory));
+    auto* emptyTypeArgs = rFactory->MakeEmptyTypeArguments();
 
     // EnumElem
     for (auto* sEnumElem : sEnum->elements)
     {
         RName elemName{RName::Normal(sEnumElem->name)};
-        auto* rEnumElem = (*rFactory)->MakeDecl<REnumElemDecl>(RDeclKey::Normal(elemName), rEnum, move(elemName), *rFactory);
+        auto* rEnumElem = rFactory->MakeDecl<REnumElemDecl>(RDeclKey::Normal(elemName), rEnum, move(elemName), rFactory);
         rEnum->AddElem(rEnumElem);
 
         SmDeclContextPtr enumElemDeclContext = MakePtr<SmDeclContext_Decl<REnumElemDecl>>(enumDeclContext, rEnumElem, emptyTypeArgs);

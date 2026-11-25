@@ -23,6 +23,7 @@ namespace Citron {
 
 class RTypeArguments;
 struct RFuncParameter;
+using DiagPtr = std::shared_ptr<struct Diag>;
 
 template<typename TFuncDecl>
 struct SmFuncMatch

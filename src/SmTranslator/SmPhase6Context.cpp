@@ -2,8 +2,8 @@
 
 namespace Citron {
 
-SmPhase6Context::SmPhase6Context(TakeRef<RFactoryPtr> rFactory)
-    : rFactory{rFactory.Take()}
+SmPhase6Context::SmPhase6Context(InRefPtr<RFactory> rFactory)
+    : rFactory{rFactory.Share()}
 {
 }
 

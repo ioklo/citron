@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 
 namespace Citron {
 
@@ -24,6 +24,6 @@ public:
 
 using IEvalQDataCommandHandlerPtr = std::shared_ptr<IEvalQDataCommandHandler>;
 
-QEVALUATOR_API std::expected<void, DiagPtr> EvaluateQData(std::span<RModule*> rModules, QData* qData, RGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, InRef<RFactoryPtr> rFactory);
+QEVALUATOR_API std::expected<void, DiagPtr> EvaluateQData(std::span<RModule*> rModules, QData* qData, RGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, InRefPtr<RFactory> rFactory);
 
 } // namespace Citron

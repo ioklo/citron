@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include "Infra/RefPtr.h"
 #include "RSymbol/RFactory.h"
 #include "NSymbol/NFactory.h"
 
@@ -12,7 +13,7 @@ class SmPhase6Context
     RFactoryPtr rFactory;
 
 public:
-    SmPhase6Context(TakeRef<RFactoryPtr> rFactory);
+    SmPhase6Context(InRefPtr<RFactory> rFactory);
 
     template<typename TRDecl, typename... TArgs>
     TRDecl* MakeRDecl(TArgs&&... args)

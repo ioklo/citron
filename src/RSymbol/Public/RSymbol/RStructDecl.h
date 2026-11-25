@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RTypeDeclOuter.h"
 #include "RGenericsComponent.h"
 #include "RTypeDeclContainerComponent.h"
@@ -32,24 +33,24 @@ class RStructDecl final : public RDecl, public RTypeDecl
     RDeclKey key;
     RTypeDeclOuter outer; // owner with accessor
     RName name;
-
-    std::vector<RStructCtorDecl*> ctors;
-    RStructDtorDecl* dtor;
-    int trivialCtorIndex; // can be -1
-
-    std::vector<RStructVarDecl*> vars;
-    std::optional<std::vector<RAppliedDecl<RTraitDecl>>> o_traits;
-    std::unordered_map<RName, RStructVarDecl*> varsMap;
-    NStructInfo* structInfo;
-
-    RGenericsComponent genericsComp;
-    RTypeDeclContainerComponent typeDeclContainerComp;
-    RImplTraitDeclContainerComponent implTraitDeclContainerComp;
-    RFuncDeclContainerComponent<RStructFuncDecl, RMember_StructFuncs> funcDeclContainerComp;
     RFactoryPtr rFactory;
 
+    std::vector<RStructCtorDecl*> ctors{};
+    RStructDtorDecl* dtor{nullptr};
+    int trivialCtorIndex{-1}; // can be -1
+
+    std::vector<RStructVarDecl*> vars{};
+    std::optional<std::vector<RAppliedDecl<RTraitDecl>>> o_traits{};
+    std::unordered_map<RName, RStructVarDecl*> varsMap{};
+    NStructInfo* structInfo{nullptr};
+
+    RGenericsComponent genericsComp{};
+    RTypeDeclContainerComponent typeDeclContainerComp{};
+    RImplTraitDeclContainerComponent implTraitDeclContainerComp{};
+    RFuncDeclContainerComponent<RStructFuncDecl, RMember_StructFuncs> funcDeclContainerComp{};
+
 public:
-    RSYMBOL_API RStructDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RStructDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory);
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { return genericsComp.InitTypeParams(std::move(typeParams)); }
     RSYMBOL_API void InitTraits(std::vector<RAppliedDecl<RTraitDecl>>&& traits);
 

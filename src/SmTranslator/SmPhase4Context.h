@@ -4,20 +4,18 @@
 #include <tuple>
 #include <functional>
 #include <expected>
-#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RFuncReturn.h"
 
 namespace Citron {
 
+using DiagPtr = std::shared_ptr<struct Diag>;
 struct RFuncParameter;
 class RType;
 class RDecl;
 using RFactoryPtr = std::shared_ptr<RFactory>;
-using DiagPtr = std::shared_ptr<struct Diag>;
-using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
-
 class SmPhase7Context;
 class SmTypeResolveScope;
 
@@ -26,7 +24,7 @@ class SmPhase4Context
     RFactoryPtr rFactory;
 
 public:
-    SmPhase4Context(TakeRef<RFactoryPtr> rFactory);
+    SmPhase4Context(InRefPtr<RFactory> rFactory);
 
     template<typename TRDecl, typename... TArgs> requires std::derived_from<TRDecl, RDecl>
     TRDecl* MakeRDecl(TArgs&&... args)

@@ -40,23 +40,23 @@ namespace Citron {
 
 expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     string moduleName,
-    const vector<SScript*>& scripts, // translation units
-    const vector<EModule*>& referenceModules,
-    InRef<LoggerPtr> logger,
-    InRef<RFactoryPtr> rFactory,
-    InRef<MFactoryPtr> mFactory)
+    span<SScript*> scripts, // translation units
+    span<EModule*> referenceModules,
+    InRefPtr<Logger> logger,
+    InRefPtr<RFactory> rFactory,
+    InRefPtr<MFactory> mFactory)
 {
     // TODO: NewRootNamespaceDecl이 아니라 RootNamespaceGroupDecl이어야 할것 같고, 모듈은 rootNamespaceDeclGroup을 가져야 할 것 같다
 
     // 모듈은 모든 translation unit에 대해 하나만 갖는다. symbol tree도 하나고, namespace도 하나다
-    auto* rModule = (*rFactory)->MakeModule(std::move(moduleName));
-    auto* rRootNamespace = (*rFactory)->MakeRootNamespaceDecl(rModule, *rFactory);
+    auto* rModule = rFactory->MakeModule(std::move(moduleName));
+    auto* rRootNamespace = rFactory->MakeRootNamespaceDecl(rModule, rFactory);
     rModule->InitRootNamespace(rRootNamespace);
 
     auto smFactory = MakePtr<SmFactory>();
-    auto binOpQueryService = MakePtr<BinOpQueryService>(**rFactory);
+    auto binOpQueryService = MakePtr<BinOpQueryService>(*rFactory);
     
-    SmPhaseManager phaseManager{*logger, *rFactory, *mFactory, smFactory, binOpQueryService};
+    SmPhaseManager phaseManager{logger, rFactory, mFactory, smFactory, binOpQueryService};
 
     // translation units
     for (auto* script : scripts)
@@ -65,7 +65,7 @@ expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     auto e_funcBodies = phaseManager.Run();
     RETURN_ON_ERROR(e_funcBodies);
 
-    auto* mData = (*mFactory)->MakeMData(move(*e_funcBodies));
+    auto* mData = mFactory->MakeMData(move(*e_funcBodies));
     return SmTranslationResult{rModule, mData};
 }
 

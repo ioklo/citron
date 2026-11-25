@@ -8,13 +8,13 @@ using namespace std;
 
 namespace Citron {
 
-RLambdaDecl::RLambdaDecl(RFuncDecl* outer, RName&& name, TakeRef<RFactoryPtr> rFactory)
+RLambdaDecl::RLambdaDecl(RFuncDecl* outer, RName&& name, InRefPtr<RFactory> rFactory)
     : outer{outer}
     , name{move(name)}
     , genericsComp{}
     , commonFuncDeclComp{/*bSeqFunc*/false}
     , ImplRFuncDeclUsingCommonComponents{this, commonFuncDeclComp}
-    , rFactory{rFactory.Take()}
+    , rFactory{rFactory.Share()}
 
 {
     genericsComp.InitTypeParams({});

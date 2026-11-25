@@ -1,5 +1,5 @@
 #include "SmClassTranslation.h"
-#include "Infra/Ptr.h"
+#include "Infra/RefPtr.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RTypeDeclOuter.h"
 #include "RSymbol/RNames.h"
@@ -17,6 +17,9 @@
 using namespace std;
 
 namespace Citron {
+
+using SmDeclContextPtr = shared_ptr<class SmDeclContext>;
+
 namespace {
 
 class SmClassElemTranslator
@@ -27,8 +30,8 @@ class SmClassElemTranslator
     SmPhaseManager& phaseManager;
 
 public:
-    SmClassElemTranslator(InRef<SmDeclContextPtr> classDeclContext, RClassDecl* outer, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
-        : classDeclContext{*classDeclContext}, rClass{outer}, rFactory{*rFactory}, phaseManager{phaseManager}
+    SmClassElemTranslator(InRefPtr<SmDeclContext> classDeclContext, RClassDecl* outer, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
+        : classDeclContext{classDeclContext.Share()}, rClass{outer}, rFactory{rFactory.Share()}, phaseManager{phaseManager}
     {
     }
 
@@ -52,27 +55,27 @@ public:
 
 namespace Citron {
 
-void SmTranslateClass(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SClassDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateClass(InRefPtr<SmDeclContext> outerDeclContext, RTypeDeclOuter outer, SClassDecl* syntax, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     RName name{RName::Normal(syntax->name)};
-    auto* rClassDecl = (*rFactory)->MakeDecl<RClassDecl>(RDeclKey::Normal(name), outer, move(name), *rFactory);
+    auto* rClassDecl = rFactory->MakeDecl<RClassDecl>(RDeclKey::Normal(name), outer, move(name), rFactory);
 
-    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rClassDecl, syntax->typeParams, *rFactory);
+    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rClassDecl, syntax->typeParams, rFactory);
     rClassDecl->InitTypeParams(move(typeParams));
     outer.AddType(rClassDecl);
 
     assert(false);
 
     // TODO: RDecl::MakeOpenTypeArgs는 전체적으로 typeArgs를 다시만드는데, 이 rDecl만큼만 만들게 할 수 있을 것이다
-    // auto* openTypeArgs = rClassDecl->MakeOpenTypeArgs(**rFactory);
+    // auto* openTypeArgs = rClassDecl->MakeOpenTypeArgs(*rFactory);
     // auto classDeclContext = MakePtr<SmDeclContext_ClassDecl>(*outerDeclContext, rClassDecl, openTypeArgs);
     // phaseManager.AddTask<SmClassTask>(move(classDeclContext), rClassDecl, syntax);
 
     //// child     
     //for (auto& memberDecl : syntax->memberDecls)
     //{
-    //    visit(SmClassElemTranslator{classDeclContext, rStructDecl, *rFactory, phaseManager}, memberDecl);
-    //}
+    //    visit(SmClassElemTranslator{classDeclContext, rStructDecl, rFactory, phaseManager}, memberDecl);
+    //}*
 }
 
 namespace {

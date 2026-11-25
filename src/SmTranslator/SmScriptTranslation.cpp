@@ -45,8 +45,8 @@ class SmScriptElemTranslator
     SmPhaseManager& phaseManager;
 
 public:
-    SmScriptElemTranslator(InRef<SmDeclContextPtr> rootDeclContext, RNamespace* rootNamespace, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
-        : rootDeclContext{*rootDeclContext}, rootNamespace{rootNamespace}, rFactory{*rFactory}, phaseManager{phaseManager}
+    SmScriptElemTranslator(InRefPtr<SmDeclContext> rootDeclContext, RNamespace* rootNamespace, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
+        : rootDeclContext{rootDeclContext.Share()}, rootNamespace{rootNamespace}, rFactory{rFactory.Share()}, phaseManager{phaseManager}
     {
     }
 
@@ -69,10 +69,10 @@ public:
 namespace Citron {
 
 // TODO: 에러 처리
-void SmTranslateScript(SScript* sScript, RModule* rModule, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateScript(SScript* sScript, RModule* rModule, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
-    auto* emptyTypeArgs = (*rFactory)->MakeEmptyTypeArguments();
-    auto* rootNamespace = (*rFactory)->MakeRootNamespaceDecl(rModule, *rFactory);
+    auto* emptyTypeArgs = rFactory->MakeEmptyTypeArguments();
+    auto* rootNamespace = rFactory->MakeRootNamespaceDecl(rModule, rFactory);
     SmDeclContextPtr rootDeclContext = MakePtr<SmDeclContext_Decl<RNamespace>>(SmDeclContextPtr{nullptr}, rootNamespace, emptyTypeArgs);
 
     for (auto& elem : sScript->elements)

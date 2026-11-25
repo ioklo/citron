@@ -43,7 +43,7 @@ SmFuncContext::SmFuncContext()
 {
 }
 
-RLambdaVarDecl* SmFuncContext::StageLambdaVar(RType* type, TakeRef<RName> name, MArgument&& arg)
+RLambdaVarDecl* SmFuncContext::StageLambdaVar(RType* type, RName&& name, MArgument&& arg)
 {
     auto* lambdaVar = rFactory->MakeDecl<RLambdaVarDecl>(type, move(name));
     lambdaVarAndInitArgs.emplace_back(lambdaVar, move(arg));
@@ -84,7 +84,7 @@ size_t SmFuncContext::AddNewLabelId(std::optional<std::string>& o_label)
     return newId;
 }
 
-std::optional<size_t> SmFuncContext::GetLabelId(const std::string& label)
+std::optional<size_t> SmFuncContext::GetLabelId(string_view label)
 {
     if (auto* id = namedLabels.Find(label))
         return *id;

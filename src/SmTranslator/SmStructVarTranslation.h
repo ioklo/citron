@@ -1,6 +1,5 @@
 #pragma once
-#include <memory>
-#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 
 namespace Citron {
 
@@ -9,9 +8,9 @@ class SStructVarDecl;
 
 class SmPhaseManager;
 
-using RFactoryPtr = std::shared_ptr<class RFactory>;
-using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
+class RFactory;
+class SmDeclContext;
 
-void SmTranslateStructVar(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
+void SmTranslateStructVar(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager);
 
 } // namespace Citron

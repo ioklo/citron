@@ -5,6 +5,7 @@
 #include <memory>
 #include <deque>
 #include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "Infra/Hash.h"
 #include "RTypes.h" // for RFuncType::Parameter
 #include "RModule.h"
@@ -162,8 +163,8 @@ public:
 
     RSYMBOL_API bool IsListType(RType* type, RType** outItemType);
     
-    RSYMBOL_API RNamespace* MakeRootNamespaceDecl(RModule* module, TakeRef<RFactoryPtr> rFactory);
-    RSYMBOL_API RNamespace* MakeChildNamespaceDecl(RNamespace* outer, std::string_view name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RNamespace* MakeRootNamespaceDecl(RModule* module, InRefPtr<RFactory> rFactory);
+    RSYMBOL_API RNamespace* MakeChildNamespaceDecl(RNamespace* outer, std::string_view name, InRefPtr<RFactory> rFactory);
 
     RSYMBOL_API RModule* MakeModule(RModuleName&& name);
     

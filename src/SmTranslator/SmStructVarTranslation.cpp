@@ -19,6 +19,9 @@
 using namespace std;
 
 namespace Citron {
+
+using SmDeclContextPtr = shared_ptr<class SmDeclContext>;
+
 namespace {
 
 class StructVarTask
@@ -31,8 +34,8 @@ class StructVarTask
     RFactoryPtr rFactory;
 
 public:
-    StructVarTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructVarDecl* sStructVar, InRef<RFactoryPtr> rFactory)
-        : structDeclContext{*structDeclContext}, rStruct{rStruct}, sStructVar{sStructVar}, rFactory{*rFactory}
+    StructVarTask(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rStruct, SStructVarDecl* sStructVar, InRefPtr<RFactory> rFactory)
+        : structDeclContext{structDeclContext.Share()}, rStruct{rStruct}, sStructVar{sStructVar}, rFactory{rFactory.Share()}
     {
     }
 
@@ -44,7 +47,7 @@ public:
 
 namespace Citron {
 
-void SmTranslateStructVar(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateStructVar(InRefPtr<SmDeclContext> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
     phaseManager.AddTask<StructVarTask>(structDeclContext, rOuter, syntax, rFactory);
 }
