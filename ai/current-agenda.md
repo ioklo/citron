@@ -18,6 +18,7 @@ SmTranslator Ref 정리 및 함수 인자 view/helper 규칙 기록 (2026-11-25)
 - 확정: class에는 자동 memberwise constructor를 두지 않고, 명시적 생성자의 필드 직접 초기화 인자를 init x로 표기한다. direct 후보를 대체한다. ai/wiki/language/class-constructors.md에 기록했다. 구현 검증은 미실행이다.
 
 ## Active Work
+- 2026-11-27: 기기 간 작업 인계 스크립트 `task/pull-from.ps1` 및 `task/handoff.ps1` 추가. SSH 호스트 지정으로 원격 stash 전송 후 복원하며 dirty 수신과 HEAD 불일치는 거부한다. 기록: `ai/notes/2026-11-27-work-handoff-script.md`.
 - trait/impl parsing 완료.
 - trait/impl syntax의 RSymbol 변환 완료.
 - impl이 trait requirement를 만족하는지 검사하는 단계 완료.
