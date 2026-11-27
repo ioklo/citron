@@ -9,4 +9,5 @@
 - staged/unstaged/untracked 상태를 전달한다. ignored 파일은 제외하며 submodule 변경은 거부한다. 실행 도중 양쪽 파일을 편집하지 않는 전제다.
 - `handoff.ps1`은 push/pull/status 및 내부 check 기능을 제공한다. 단독 실행은 `refs/wip/citron`, SSH 인계는 호출별 `refs/wip/handoff/<id>`로 다른 인계와의 경합을 피한다. 원격 snapshot 및 로컬 incoming ref는 복구용으로 유지한다. 보관 ref/stash의 자동 정리는 구현하지 않았다.
 - 전송 실패 후 송신 stash, 수신 실패 후 출력된 ref를 이용해 복구/재시도한다. 수신 성공 전에는 양쪽을 원자적으로 이동시키지 못하므로 실패 시 두 기기가 모두 clean인 경우도 있다.
+- EDWARD → OLIVER 인계가 멈추는 현상 진단을 위해 시간·기기·역할 및 START/END 로그를 추가했다. 로컬 검사, SSH 시작/완료, 원격 pwsh 진입, handoff 진입, 각 Git 호출, 복원 단계를 표시한다. Git 결과 파이프라인에 로그가 섞이지 않도록 Write-Host를 사용한다. 실제 중단 원인은 아직 미확정이다.
 - 검증: `task/tests/handoff.tests.ps1`의 임시 bare repository와 SSH 대역으로 왕복 인계, index 보존, untracked/ignored 처리, dirty 수신 거부, SSH payload 실행, 빈 송신 거부, 기준 커밋 불일치, push 실패 후 stash 복구를 검사한다. 실제 SSH/GitHub 및 macOS 실행 검증은 별도다.
