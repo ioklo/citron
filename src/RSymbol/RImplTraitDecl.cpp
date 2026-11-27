@@ -17,13 +17,15 @@ RImplTraitDecl::RImplTraitDecl()
 {
 }
 
-void RImplTraitDecl::Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RAppliedDecl<RStructDecl>&& target, RAppliedDecl<RTraitDecl> appliedTraitDecl)
+void RImplTraitDecl::InitTypeParams(std::vector<RTypeParam*>&& typeParams)
 {
-    assert(target.decl->GetTypeParamCount() == typeParams.size());
-
-    this->target = move(target);
-    o_lazyInit.emplace(move(key), move(appliedTraitDecl));
     genericsComp.InitTypeParams(move(typeParams));
+}
+
+void RImplTraitDecl::Init(RDeclKey&& key, RAppliedDecl<RStructDecl>&& target, RAppliedDecl<RTraitDecl> appliedTraitDecl)
+{
+    assert(target.decl->GetTypeParamCount() == genericsComp.GetTypeParamCount());
+    o_lazyInit.emplace(move(key), move(target), move(appliedTraitDecl));
 }
 
 void RImplTraitDecl::AddMember(RImplTraitMemberDecl&& decl)
@@ -45,7 +47,7 @@ RDeclKey& RImplTraitDecl::GetDeclKey()
 // from RDecl
 RDecl* RImplTraitDecl::GetOuter()
 {
-    return target.decl->GetOuter(); // target과 outer가 같다
+    return o_lazyInit->target.decl->GetOuter(); // target과 outer가 같다
 }
 
 // 이름으로 검색할 수 없다

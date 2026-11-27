@@ -5,6 +5,7 @@
 #include <cassert>
 #include <expected>
 
+#include "Infra/Ref.h"
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
@@ -51,7 +52,7 @@ struct RLambdaDeclAndArgs
 
 expected<void, DiagPtr> TranslateSStmtToMStmts(std::vector<MStmt*>& outStmts, SStmt* sStmt, SmTranslationContexts& contexts);
 expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmbeddableStmt* embedStmt, SmTranslationContexts& contexts);
-expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, SmTranslationContexts& contexts);
+expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(InRef<std::optional<std::string>> o_label, SEmbeddableStmt* sEmbedStmt, SmTranslationContexts& contexts);
 expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(std::vector<MStmt*>& outStmts, SEmbeddableStmt* embedStmt, SmTranslationContexts& contexts);
 expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, SmTranslationContexts& contexts);
 expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, SmTranslationContexts& contexts);
@@ -902,7 +903,7 @@ expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmb
     return contexts.mFactory->MakeMStmt<MStmt_Scope>(MScopeKind_Default{}, move(stmts));
 }
 
-expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, SmTranslationContexts& contexts)
+expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(InRef<std::optional<std::string>> o_label, SEmbeddableStmt* sEmbedStmt, SmTranslationContexts& contexts)
 {
     size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
 
