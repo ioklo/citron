@@ -149,7 +149,46 @@ exit $LASTEXITCODE
     Run-Handoff $a push 1
     Invoke-FixtureGit $a stash apply --index 'stash@{0}' | Out-Null
     Assert ((Get-Content (Join-Path $a 'recover.txt')) -eq 'recover me') 'Failed push lost work'
-    Write-Host 'PASS: round trip, staging, untracked/ignored files, dirty receiver, SSH payload, missing local/source config, per-device remotes, explicit remote override, empty source, base mismatch, failed push backup.'
+    if ($IsWindows) {
+        # Real Git invokes a fake SSH command: no network, but the intermediate
+        # shell must remove descriptor state and preserve SSH command precedence.
+        $sshProbe = Join-Path $fixture "ssh probe's.sh"
+        [IO.File]::WriteAllText($sshProbe, @'
+printf 'SSH_PROBE_STATE=%s;ARG=%s\n' "${c28fc6f98a2c44abbbd89d6a3037d0d9_POSIX_FD_STATE-absent}" "$1" >&2
+exit 1
+'@.Replace("`r`n", "`n"))
+        $probeCommand = 'sh ' + "'" + $sshProbe.Replace('\', '/').Replace("'", "'\''") + "'"
+        Invoke-FixtureGit $a remote set-url github 'probe@example.invalid:repo'
+        Invoke-FixtureGit $a config core.sshCommand "$probeCommand config"
+        $oldSshCommand = $env:GIT_SSH_COMMAND
+        $stateName = 'c28fc6f98a2c44abbbd89d6a3037d0d9_POSIX_FD_STATE'
+        $oldState = [Environment]::GetEnvironmentVariable($stateName)
+        try {
+            [Environment]::SetEnvironmentVariable($stateName, 'inherited-state')
+            foreach ($mode in @('config', 'environment', 'executable-path')) {
+                $oldSsh = $env:GIT_SSH
+                try {
+                    $env:GIT_SSH_COMMAND = if ($mode -eq 'environment') { "$probeCommand environment" } else { $null }
+                    if ($mode -eq 'executable-path') {
+                        Invoke-FixtureGit $a config --unset core.sshCommand
+                        $env:GIT_SSH = $sshProbe.Replace('\', '/')
+                    }
+                    $probeOutput = & pwsh -NoProfile -File $handoff status -Repository $a 2>&1
+                    Assert ($LASTEXITCODE -eq 1) 'Fake SSH unexpectedly succeeded'
+                    Assert (($probeOutput -join "`n") -like '*SSH_PROBE_STATE=absent*') "Descriptor state reached SSH ($mode)"
+                    if ($mode -ne 'executable-path') {
+                        Assert (($probeOutput -join "`n") -like "*ARG=$mode*") "Wrong SSH command selected ($mode)"
+                    }
+                }
+                finally { $env:GIT_SSH = $oldSsh }
+            }
+        }
+        finally {
+            $env:GIT_SSH_COMMAND = $oldSshCommand
+            [Environment]::SetEnvironmentVariable($stateName, $oldState)
+        }
+    }
+    Write-Host 'PASS: round trip, staging, untracked/ignored files, dirty receiver, SSH payload, missing local/source config, per-device remotes, explicit remote override, empty source, base mismatch, failed push backup, Windows SSH descriptor-state workaround and SSH command precedence.'
 }
 finally {
     $env:PATH = $oldPath
@@ -160,3 +199,4 @@ finally {
         Remove-Item -LiteralPath $resolvedFixture -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
+exit 0

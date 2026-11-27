@@ -44,11 +44,38 @@ function Write-HandoffStep([string] $Message) {
 }
 
 function Invoke-Git {
-    param([Parameter(ValueFromRemainingArguments)][string[]] $GitArgs)
+    param(
+        [switch] $Network,
+        [Parameter(ValueFromRemainingArguments)][string[]] $GitArgs
+    )
     $command = 'git ' + ($GitArgs -join ' ')
     Write-HandoffStep "START $command"
-    $result = & git -C $Repository @GitArgs
-    $gitExit = $LASTEXITCODE
+    $previousSshCommand = $env:GIT_SSH_COMMAND
+    try {
+        if ($IsWindows -and $Network) {
+            # Win32-OpenSSH #2037: Git's intermediate shell can pass inherited
+            # descriptor state to ssh.exe. Clear it in that shell, just before SSH.
+            $sshCommand = $previousSshCommand
+            if (-not $sshCommand) {
+                $sshCommand = & git -C $Repository config --get core.sshCommand
+                if ($LASTEXITCODE -notin @(0, 1)) { throw 'Could not read core.sshCommand.' }
+            }
+            if (-not $sshCommand) {
+                if ($env:GIT_SSH) {
+                    # GIT_SSH is an executable path, not a shell command.
+                    $sshCommand = "'" + $env:GIT_SSH.Replace("'", "'\''") + "'"
+                }
+                else { $sshCommand = 'ssh' }
+            }
+            $env:GIT_SSH_COMMAND = "unset c28fc6f98a2c44abbbd89d6a3037d0d9_POSIX_FD_STATE; $sshCommand"
+            Write-HandoffStep 'Applying Windows nested SSH workaround for this Git call.'
+        }
+        $result = & git -C $Repository @GitArgs
+        $gitExit = $LASTEXITCODE
+    }
+    finally {
+        if ($IsWindows -and $Network) { $env:GIT_SSH_COMMAND = $previousSshCommand }
+    }
     Write-HandoffStep "END $command (exit $gitExit)"
     if ($gitExit -ne 0) {
         throw "$command failed (exit $gitExit)."
@@ -57,7 +84,7 @@ function Invoke-Git {
 }
 
 function Get-RemoteSnapshot {
-    $lines = @(Invoke-Git ls-remote --refs -- $Remote $Ref)
+    $lines = @(Invoke-Git -Network ls-remote --refs -- $Remote $Ref)
     if ($lines.Count -eq 0) { return '' }
     if ($lines.Count -ne 1) { throw 'Expected exactly one remote snapshot ref.' }
     ($lines[0] -split '\s+')[0]
@@ -134,14 +161,14 @@ try {
             throw 'Worktree is still dirty after stashing; snapshot was not sent. Local stash is retained.'
         }
         # An explicit lease prevents overwriting a snapshot changed during this run.
-        Invoke-Git -c push.followTags=false push "--force-with-lease=${Ref}:$expected" -- $Remote "${snapshot}:$Ref" | Out-Host
+        Invoke-Git -Network -c push.followTags=false push "--force-with-lease=${Ref}:$expected" -- $Remote "${snapshot}:$Ref" | Out-Host
         Write-Host "Sent $snapshot to ${Remote}:${Ref}. Worktree is clean; local stash retained."
     }
     else {
         if ($changes.Count -gt 0) { throw 'Receiving requires a clean worktree (including untracked files).' }
         # A dedicated ref keeps the fetched object recoverable after later fetches.
         $incoming = "refs/handoff/incoming/$([Guid]::NewGuid().ToString('N'))"
-        Invoke-Git fetch --no-tags --no-recurse-submodules -- $Remote "${Ref}:$incoming" | Out-Host
+        Invoke-Git -Network fetch --no-tags --no-recurse-submodules -- $Remote "${Ref}:$incoming" | Out-Host
         $snapshot = [string](Invoke-Git rev-parse --verify $incoming)
         Write-Host "Received snapshot: $snapshot (backup: $incoming)."
         $base = [string](Invoke-Git rev-parse --verify "${snapshot}^1")
