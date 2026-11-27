@@ -52,6 +52,8 @@ class SmPhaseManager
     std::vector<ISmPhase6Task*> phase6Tasks;
     std::vector<ISmPhase7Task*> phase7Tasks;
 
+    bool running{false};
+
 public:
     SmPhaseManager(
         InRefPtr<Logger> logger, 
@@ -77,6 +79,8 @@ void SmPhaseManager::AddTask(TArgs&&... args)
     auto* pTask = task.get();
 
     phaseTasks.push_back(move(task));
+
+    assert(!running);
 
     if constexpr (std::derived_from<TSmPhaseTask, ISmPhase2Task>) phase2Tasks.push_back(pTask);
     if constexpr (std::derived_from<TSmPhaseTask, ISmPhase3Task>) phase3Tasks.push_back(pTask);

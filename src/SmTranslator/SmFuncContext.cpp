@@ -74,12 +74,12 @@ void SmFuncContext::RollbackTransaction()
     RollbackTransaction_FuncContext();
 }
 
-size_t SmFuncContext::AddNewLabelId(std::optional<std::string>& o_label)
+size_t SmFuncContext::AddNewLabelId(InRef<std::optional<std::string>> o_label)
 {
     size_t newId = labelCount++;
 
-    if (o_label)
-        namedLabels.Add(*o_label, newId);
+    if (*o_label)
+        namedLabels.Add(**o_label, newId);
 
     return newId;
 }

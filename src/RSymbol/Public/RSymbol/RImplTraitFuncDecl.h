@@ -24,7 +24,10 @@ class RImplTraitFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonCo
 
 public:
     RSYMBOL_API RImplTraitFuncDecl(RImplTraitDecl* implTrait, bool bSeqFunc, RName&& name);
-    RSYMBOL_API void Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RFuncReturn&& funcRet, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
+    RSYMBOL_API void InitTypeParams(std::vector<RTypeParam*>&& typeParams);
+    RSYMBOL_API void Init(RDeclKey&& key, RFuncReturn&& funcRet, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
+
+    std::span<RTypeParam*> GetTypeParams();
 
 public:
     // from RDecl

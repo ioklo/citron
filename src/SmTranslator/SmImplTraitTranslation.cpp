@@ -37,14 +37,12 @@ class SmImplTraitTask
     SImplTraitDecl* sImplDecl;
     SmDeclContextPtr outerDeclContext;
     RImplTraitDeclOuter rOuter;
+    RImplTraitDecl* rImplTraitDecl;
     RFactoryPtr rFactory;
 
-private: // 추후에 만들어짐
-    RImplTraitDecl* rImplTraitDecl;
-
 public:
-    SmImplTraitTask(SImplTraitDecl* sImplDecl, InRefPtr<SmDeclContext> outerDeclContext, RImplTraitDeclOuter rOuter, InRefPtr<RFactory> rFactory)
-        : sImplDecl{sImplDecl}, outerDeclContext{outerDeclContext.Share()}, rOuter{rOuter}, rImplTraitDecl{nullptr}, rFactory{rFactory.Share()} {
+    SmImplTraitTask(SImplTraitDecl* sImplDecl, InRefPtr<SmDeclContext> outerDeclContext, RImplTraitDeclOuter rOuter, RImplTraitDecl* rImplTraitDecl, InRefPtr<RFactory> rFactory)
+        : sImplDecl{sImplDecl}, outerDeclContext{outerDeclContext.Share()}, rOuter{rOuter}, rImplTraitDecl{rImplTraitDecl}, rFactory{rFactory.Share()} {
     }
 
     std::expected<void, DiagPtr> HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, SmPhase5Contexts& contexts);
@@ -61,20 +59,109 @@ public: // from ISmPhase5Task
 
 namespace Citron {
 
-void SmTranslateImplTrait(SImplTraitDecl* sImplDecl, InRefPtr<SmDeclContext> outerDeclContext, RImplTraitDeclOuter rOuter, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
+expected<void, DiagPtr> SmTranslateImplTrait(SImplTraitDecl* sImplDecl, InRefPtr<SmDeclContext> outerDeclContext, RImplTraitDeclOuter rOuter, InRefPtr<RFactory> rFactory, SmPhaseManager& phaseManager)
 {
-    phaseManager.AddTask<SmImplTraitTask>(sImplDecl, outerDeclContext, rOuter, rFactory);
+    // SImplTraitDecl을 RImplTrait로 만든다
+    // impl S<T, U> : TraitName
+    auto* rImplTraitDecl = rFactory->MakeDecl<RImplTraitDecl>();
+    auto* rOuterDecl = rOuter.GetDecl();
+
+    // type parameter 처리
+    auto typeParams = MakeTypeParams(rOuterDecl->GetAllTypeParamCount(), rImplTraitDecl, sImplDecl->typeParams, rFactory);
+    rImplTraitDecl->InitTypeParams(move(typeParams));
+
+    phaseManager.AddTask<SmImplTraitTask>(sImplDecl, outerDeclContext, rOuter, rImplTraitDecl, rFactory);
+
+    // 이제 child 처리
+    SmDeclContextPtr implTraitDeclContext = MakePtr<SmDeclContext_Decl<RImplTraitDecl>>(outerDeclContext, rImplTraitDecl, rImplTraitDecl->MakeOpenTypeArgs(*rFactory));
+    for (auto& sMemberDecl : sImplDecl->memberDecls)
+    {
+        auto e_result = visit([](auto& sMemberDecl) -> expected<void, DiagPtr> {
+            using T = remove_cvref_t<decltype(sMemberDecl)>;
+            if constexpr (same_as<T, SImplTraitFuncDecl*>)
+            {
+                // RImplTraitFuncDecl을 만듭니다.
+                return SmTranslateImplTraitFunc(sMemberDecl, contexts);
+            }
+            else static_assert(false);
+
+        }, sMemberDecl);
+
+        RETURN_ON_ERROR(e_result);
+    }
+
+
+
+    
+
+    // impl의 name은 다른 부분과 다르게 현재 scope에 있는 struct/class/enum 이름이다
+    auto* rTargetTypeDecl = rOuterDecl->GetTypeMember(RName::Normal(sImplDecl->name));
+    if (!rTargetTypeDecl) return Error<Error_ImplTrait_TargetNotFound>();
+
+    assert(rTargetTypeDecl->RTypeDecl_GetDecl()->GetOuter() == rOuterDecl);
+
+    // TODO: [70] 2026-07-15, struct 이외에 class, enum에도 impl 넣기
+    auto* rStructTargetDecl = dynamic_cast<RStructDecl*>(rTargetTypeDecl);
+    assert(rStructTargetDecl);
+
+    // typeParams를 적용해서, rStructTarget을 만들기
+    if (rStructTargetDecl->GetTypeParamCount() != typeParams.size())
+        return Error<Error_ImplTrait_MismatchTypeParamCountWithTarget>();
+
+    auto* outerTypeArgs = rOuterDecl->MakeOpenTypeArgs(*rFactory);
+    vector<RType*> curTypeArgs;
+    curTypeArgs.reserve(typeParams.size());
+    for (auto* typeParam : typeParams)
+        curTypeArgs.push_back(rFactory->MakeTypeVarType(typeParam));
+    auto* targetTypeArgs = rFactory->AppendTypeArguments(outerTypeArgs, curTypeArgs);
+
+    RAppliedDecl<RStructDecl> rTarget{rStructTargetDecl, targetTypeArgs};
+
+    // trait 얻기
+    auto e_trait = contexts.MakeTrait(sImplDecl->trait, outerDeclContext.get(), typeParams);
+    RETURN_ON_ERROR(e_trait);
+
+    auto key = RDeclKey::ImplTrait(rStructTargetDecl, *e_trait);
+    rImplTraitDecl->Init(move(key), move(typeParams), move(rTarget), *e_trait);
+    rOuter.AddImplTrait(rImplTraitDecl);
+
+    auto e_verifyResult = CheckTarget();
+    RETURN_ON_ERROR(e_verifyResult);
+
+    // 이제 child 처리
+    for (auto& sMemberDecl : sImplDecl->memberDecls)
+    {
+        auto e_result = visit([this, &contexts](auto& sMemberDecl) -> expected<void, DiagPtr> {
+            using T = remove_cvref_t<decltype(sMemberDecl)>;
+            if constexpr (same_as<T, SImplTraitFuncDecl*>)
+            {
+                // RImplTraitFuncDecl을 만듭니다.
+                return HandleImplTraitFuncDecl(sMemberDecl, contexts);
+            }
+            else static_assert(false);
+
+        }, sMemberDecl);
+
+        RETURN_ON_ERROR(e_result);
+    }
+
+    // 모든 child를 다 추가했으면, 이제 conformance check
+    auto e_result = CheckTraitConformance();
+    RETURN_ON_ERROR(e_result);
+
+    return {};
+
+    
+
 }
 
 namespace {
 expected<void, DiagPtr> SmImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, SmPhase5Contexts& context)
-{
-    // RImplTraitFuncDecl를 만든다
-    auto* rImplTraitFuncDecl = rFactory->MakeDecl<RImplTraitFuncDecl>(rImplTraitDecl, /*bSeqFunc*/sImplTraitFuncDecl->bSequence, RName::Normal(sImplTraitFuncDecl->name));
+{   
+    // auto* rImplTraitFuncDecl = rFactory->MakeDecl<RImplTraitFuncDecl>(rImplTraitDecl, /*bSeqFunc*/sImplTraitFuncDecl->bSequence, RName::Normal(sImplTraitFuncDecl->name));
+    // auto typeParams = MakeTypeParams(rImplTraitDecl->GetAllTypeParamCount(), rImplTraitFuncDecl, sImplTraitFuncDecl->typeParams, rFactory);
 
-    auto typeParams = MakeTypeParams(rImplTraitDecl->GetAllTypeParamCount(), rImplTraitFuncDecl, sImplTraitFuncDecl->typeParams, rFactory);
-
-    SmTypeTranslationContexts contexts{SmTypeResolveScope_DeclHeader{outerDeclContext.get(), typeParams}, rFactory.get()};
+    /*SmTypeTranslationContexts contexts{SmTypeResolveScope_DeclHeader{outerDeclContext.get(), typeParams}, rFactory.get()};
     auto e_funcRet = MakeFuncReturn(sImplTraitFuncDecl->funcReturn, rImplTraitFuncDecl, typeParams, contexts);
     RETURN_ON_ERROR(e_funcRet);
 
@@ -86,7 +173,7 @@ expected<void, DiagPtr> SmImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncD
     RThisKind thisKind{RThisKind_Ref{rFactory->MakeStructType(rImplTraitDecl->GetTarget())}};
 
     rImplTraitFuncDecl->Init(move(key), move(typeParams), move(*e_funcRet), move(thisKind), move(funcParams), bLastParamVariadic);
-    rImplTraitDecl->AddMember(rImplTraitFuncDecl);
+    rImplTraitDecl->AddMember(rImplTraitFuncDecl);*/
 
     SmDeclContextPtr implTraitDeclContext = MakePtr<SmDeclContext_Decl<RImplTraitDecl>>(outerDeclContext, rImplTraitDecl, rImplTraitDecl->MakeOpenTypeArgs(*rFactory));
     SmTranslateImplTraitFunc(implTraitDeclContext, rImplTraitFuncDecl, sImplTraitFuncDecl, rFactory, *context.phaseManager);
