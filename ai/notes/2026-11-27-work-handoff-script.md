@@ -3,6 +3,7 @@
 - 사용자 요청: Git root의 `task/`에 Windows/macOS 공용 pwsh 스크립트를 둔다.
 - 수신 기기에서 `./task/pull-from.ps1 OLIVER`처럼 SSH 호스트 이름만 지정한다.
 - 호스트별 저장소 경로는 수신 기기의 Git local config `handoff.OLIVER.repository`에 설정한다. 양쪽에 스크립트 설치와 Git 원격 인증이 필요하다.
+- 기기별 Git remote는 각 저장소의 `handoff.remote` 설정으로 지정한다. `-Remote`가 우선하며 둘 다 없으면 설정 명령을 안내하고 중단한다. `origin` 자동 선택은 하지 않는다. `pull-from.ps1 -Remote`는 수신 측에만 적용하고 SSH 송신 측은 자신의 설정을 읽는다. 서로 다른 remote 이름도 같은 원격 저장소를 가리켜야 한다.
 - 흐름: 수신 측 clean/진행 중 Git 작업 검사 → SSH의 명시적 pwsh 실행 → 송신 측 HEAD 일치 검사 → stash -u 및 Git remote 전송 → 수신 측 stash apply --index.
 - 송신 작업 디렉터리는 비우고 로컬 stash는 보관한다. 수신 측 변경이 있으면 SSH 호출 전에 중단한다. 기준 커밋이 다르면 송신 stash 생성 전에 중단한다.
 - staged/unstaged/untracked 상태를 전달한다. ignored 파일은 제외하며 submodule 변경은 거부한다. 실행 도중 양쪽 파일을 편집하지 않는 전제다.

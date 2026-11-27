@@ -50,6 +50,18 @@ try {
     Invoke-FixtureGit $b config core.autocrlf false
     $headBefore = Invoke-FixtureGit $a rev-parse HEAD
 
+    # An existing origin must not silently substitute for missing configuration.
+    $missingConfig = & pwsh -NoProfile -File $handoff check -Repository $a 2>&1
+    Assert ($LASTEXITCODE -eq 1) 'Missing handoff.remote was accepted'
+    Assert (($missingConfig -join "`n") -like '*git config --local handoff.remote*') 'Missing setup instructions'
+    $missingConfig = & pwsh -NoProfile -File $pullFrom OLIVER -Repository $b -SourceRepository $a 2>&1
+    Assert ($LASTEXITCODE -eq 1) 'pull-from accepted missing handoff.remote'
+    Assert (($missingConfig -join "`n") -like '*git config --local handoff.remote*') 'pull-from omitted setup instructions'
+    & pwsh -NoProfile -File $handoff check -Repository $a -Remote origin
+    Assert ($LASTEXITCODE -eq 0) 'Explicit remote requires unnecessary configuration'
+    Invoke-FixtureGit $a config handoff.remote origin
+    Invoke-FixtureGit $b config handoff.remote origin
+
     Set-Content (Join-Path $a 'file.txt') 'staged'
     Invoke-FixtureGit $a add file.txt
     Add-Content (Join-Path $a 'file.txt') 'unstaged'
@@ -76,6 +88,9 @@ try {
     New-Item -ItemType Directory -Path (Join-Path $a 'task') | Out-Null
     Copy-Item -LiteralPath $handoff -Destination (Join-Path $a 'task/handoff.ps1')
     Add-Content (Join-Path $a '.git/info/exclude') 'task/'
+    # Source config must be independent of the receiver's configured origin.
+    Invoke-FixtureGit $a remote rename origin github
+    Invoke-FixtureGit $a config handoff.remote github
     $mockBin = Join-Path $fixture 'mock-bin'
     New-Item -ItemType Directory -Path $mockBin | Out-Null
     Set-Content (Join-Path $mockBin 'ssh.ps1') @'
@@ -93,11 +108,31 @@ exit $LASTEXITCODE
     Run-PullFrom $b $a 1
     Assert ((Invoke-FixtureGit $a rev-parse refs/stash) -eq $stashBefore) 'Dirty receiver contacted source'
     Remove-Item -LiteralPath (Join-Path $b 'block.txt')
+    Invoke-FixtureGit $a config --unset handoff.remote
+    Run-PullFrom $b $a 1
+    Assert ((Invoke-FixtureGit $a rev-parse refs/stash) -eq $stashBefore) 'Missing source config changed stash'
+    Assert ((Get-Content (Join-Path $a 'file.txt') -Raw) -ceq $contentBefore) 'Missing source config changed worktree'
+    Invoke-FixtureGit $a config handoff.remote github
     Run-PullFrom $b $a
     Assert ((Invoke-FixtureGit $b write-tree) -eq $indexBefore) 'SSH handoff lost staging'
     Assert (@(Invoke-FixtureGit $a status --porcelain).Count -eq 0) 'SSH source not cleaned'
     # No source changes must fail rather than reapply an old remote snapshot.
     Run-PullFrom $a $a 1
+
+    # Exercise the receiver's config as well, with origin absent on both devices.
+    Invoke-FixtureGit $b remote rename origin github
+    Invoke-FixtureGit $b config handoff.remote github
+    Run-Handoff $b push
+    Run-Handoff $a pull
+    Run-PullFrom $b $a
+    Assert ((Invoke-FixtureGit $b write-tree) -eq $indexBefore) 'Configured receiver lost staging'
+
+    # An explicit -Remote still takes precedence over the device setting.
+    Invoke-FixtureGit $a config handoff.remote nonexistent
+    & pwsh -NoProfile -File $handoff check -Repository $a -Remote github
+    Assert ($LASTEXITCODE -eq 0) 'Explicit remote did not override configuration'
+    Run-Handoff $a check 1
+    Invoke-FixtureGit $a config handoff.remote github
 
     Run-Handoff $b push
     Set-Content (Join-Path $a 'different.txt') 'different base'
@@ -114,7 +149,7 @@ exit $LASTEXITCODE
     Run-Handoff $a push 1
     Invoke-FixtureGit $a stash apply --index 'stash@{0}' | Out-Null
     Assert ((Get-Content (Join-Path $a 'recover.txt')) -eq 'recover me') 'Failed push lost work'
-    Write-Host 'PASS: round trip, staging, untracked/ignored files, dirty receiver, SSH payload, empty source, base mismatch, failed push backup.'
+    Write-Host 'PASS: round trip, staging, untracked/ignored files, dirty receiver, SSH payload, missing local/source config, per-device remotes, explicit remote override, empty source, base mismatch, failed push backup.'
 }
 finally {
     $env:PATH = $oldPath

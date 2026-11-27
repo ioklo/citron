@@ -4,12 +4,14 @@
 Transfers unfinished work through a single custom Git ref.
 .DESCRIPTION
 push saves tracked, staged and untracked files with stash push -u, then sends
-the snapshot to origin:refs/wip/citron. The worktree becomes clean; the local
+the snapshot to the configured remote at refs/wip/citron. The worktree becomes clean; the local
 stash is retained even if transmission fails. Ignored files are excluded.
 pull requires a clean worktree and the same HEAD as the snapshot's base, then
 uses stash apply --index. It never switches branches or moves HEAD.
 Submodule changes must be handled separately. Do not edit files while running.
 The remote ref is shared by all devices; it is not a private storage area.
+Remote selection: -Remote, then git config handoff.remote. No implicit default.
+Example per-device setup: git config --local handoff.remote github
 .EXAMPLE
 pwsh -NoProfile -File ./task/handoff.ps1 push
 .EXAMPLE
@@ -24,7 +26,7 @@ param(
     [Parameter(Position = 0, Mandatory)]
     [ValidateSet('push', 'pull', 'status', 'check')]
     [string] $Action,
-    [string] $Remote = 'origin',
+    [string] $Remote,
     [string] $Ref = 'refs/wip/citron',
     [string] $Repository = (Split-Path -Parent $PSScriptRoot),
     [string] $ExpectedHead,
@@ -53,10 +55,19 @@ function Get-RemoteSnapshot {
 }
 
 try {
+    if (-not $Remote) {
+        $Remote = & git -C $Repository config --get handoff.remote
+        if ($LASTEXITCODE -notin @(0, 1)) { throw 'Could not read handoff.remote configuration.' }
+        if (-not $Remote) {
+            throw 'handoff.remote is not configured. Set it with: git config --local handoff.remote <remote-name> (or specify -Remote).'
+        }
+    }
     if ($Ref -notlike 'refs/wip/*') { throw '-Ref must be under refs/wip/.' }
     Invoke-Git check-ref-format $Ref | Out-Null
     # Accept a configured remote name, not an option or arbitrary URL.
-    if ($Remote -notin @(Invoke-Git remote)) { throw "Unknown remote: $Remote" }
+    if ($Remote -notin @(Invoke-Git remote)) {
+        throw "Unknown remote: $Remote. Set this device's remote with: git config --local handoff.remote <remote-name>"
+    }
     $Repository = [string](Invoke-Git rev-parse --show-toplevel)
     $headOid = [string](Invoke-Git rev-parse --verify HEAD)
     if ($ExpectedHead -and $headOid -ne $ExpectedHead) {
