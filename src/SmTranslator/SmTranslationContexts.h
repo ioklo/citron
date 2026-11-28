@@ -7,6 +7,7 @@
 #include <string>
 #include <tuple>
 
+#include "Infra/Ref.h"
 #include "Infra/RefPtr.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncReturn.h"
@@ -60,8 +61,8 @@ SmTranslationContexts MakeTranslationContexts(InRefPtr<SmDeclContext> declContex
 
 SmTranslationContexts MakeTranslationContexts_DefaultScope(SmTranslationContexts& contexts);
 SmTranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, SmTranslationContexts& contexts);
-SmTranslationContexts MakeTranslationContexts_SwitchScope(std::optional<std::string>& o_label, SmTranslationContexts& contexts);
-std::tuple<size_t, SmTranslationContexts> MakeTranslationContexts_InlineScope(std::optional<std::string> o_label, RType* hintType, SmTranslationContexts& contexts);
+SmTranslationContexts MakeTranslationContexts_SwitchScope(InRef<std::optional<std::string>> o_label, SmTranslationContexts& contexts);
+std::tuple<size_t, SmTranslationContexts> MakeTranslationContexts_InlineScope(InRef<std::optional<std::string>> o_label, RType* hintType, SmTranslationContexts& contexts);
 
 template<typename TFunc>
 concept UsingTranslationContexts_InlineScopeFunc = requires(TFunc&& func, MScopeKind_Inline scopeKind, SmTranslationContexts& contexts)

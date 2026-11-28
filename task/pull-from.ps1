@@ -36,20 +36,13 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 
-function Write-PullStep([string] $Message) {
-    Write-Host ('[{0:HH:mm:ss}] [{1} pull-from] {2}' -f (Get-Date), [Environment]::MachineName, $Message)
-}
-
 function ConvertTo-PSLiteral([string] $Value) {
     "'" + $Value.Replace("'", "''") + "'"
 }
 
 try {
-    Write-PullStep "Script entered. Source: $Source; local repository: $Repository"
     if (-not $Remote) {
-        Write-PullStep 'START git config --get handoff.remote'
         $Remote = & git -C $Repository config --get handoff.remote
-        Write-PullStep "END git config --get handoff.remote (exit $LASTEXITCODE)"
         if ($LASTEXITCODE -notin @(0, 1)) { throw 'Could not read handoff.remote configuration.' }
         if (-not $Remote) {
             throw 'handoff.remote is not configured. Set it with: git config --local handoff.remote <remote-name> (or specify -Remote).'
@@ -57,23 +50,17 @@ try {
     }
     $handoff = Join-Path $PSScriptRoot 'handoff.ps1'
     # A separate process isolates handoff.ps1's exit statements.
-    Write-PullStep 'START local preflight'
     & pwsh -NoProfile -File $handoff check -Repository $Repository -Remote $Remote
-    Write-PullStep "END local preflight (exit $LASTEXITCODE)"
     if ($LASTEXITCODE -ne 0) { throw 'Local preflight failed. Source was not contacted.' }
 
     if (-not $SourceRepository) {
-        Write-PullStep "START git config --get handoff.$Source.repository"
         $SourceRepository = & git -C $Repository config --get "handoff.$Source.repository"
-        Write-PullStep "END git config --get handoff.$Source.repository (exit $LASTEXITCODE)"
         if ($LASTEXITCODE -notin @(0, 1)) { throw 'Could not read handoff path configuration.' }
     }
     if (-not $SourceRepository) {
         throw "Set the source repository path first: git config --local handoff.$Source.repository '<path on $Source>'"
     }
-    Write-PullStep 'START git rev-parse --verify HEAD'
     $headOid = & git -C $Repository rev-parse --verify HEAD
-    Write-PullStep "END git rev-parse --verify HEAD (exit $LASTEXITCODE)"
     if ($LASTEXITCODE -ne 0) { throw 'Could not read local HEAD.' }
     # Each invocation owns its ref so concurrent handoffs cannot replace it.
     $transferRef = "refs/wip/handoff/$([Guid]::NewGuid().ToString('N'))"
@@ -82,7 +69,6 @@ try {
     $payload = @"
 `$ErrorActionPreference = 'Stop'
 try {
-    Write-Host ('[{0:HH:mm:ss}] [{1} pull-from remote] PowerShell entered; loading handoff.ps1.' -f (Get-Date), [Environment]::MachineName)
     `$repo = $(ConvertTo-PSLiteral $SourceRepository)
     & (Join-Path `$repo 'task/handoff.ps1') push -Repository `$repo -Ref $(ConvertTo-PSLiteral $transferRef) -ExpectedHead $(ConvertTo-PSLiteral $headOid) -RequireChanges
     exit `$LASTEXITCODE
@@ -93,14 +79,10 @@ try {
 "@
     # Only a fixed command and Base64 reach the remote login shell (PowerShell/zsh).
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($payload))
-    Write-PullStep "START SSH to $Source; source repository: $SourceRepository"
     & ssh $Source "pwsh -NoLogo -NoProfile -NonInteractive -OutputFormat Text -EncodedCommand $encoded"
-    Write-PullStep "END SSH to $Source (exit $LASTEXITCODE)"
     if ($LASTEXITCODE -ne 0) { throw 'Source handoff failed. Local worktree was not changed; inspect source output for its stash backup.' }
 
-    Write-PullStep 'START local restore'
     & pwsh -NoProfile -File $handoff pull -Repository $Repository -Remote $Remote -Ref $transferRef
-    Write-PullStep "END local restore (exit $LASTEXITCODE)"
     if ($LASTEXITCODE -ne 0) { throw "Receiving failed. Snapshot remains at ${Remote}:${transferRef}." }
     Write-Host "Handoff from $Source completed. Remote snapshot retained at $transferRef."
 }

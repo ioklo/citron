@@ -38,18 +38,12 @@ $ErrorActionPreference = 'Stop'
 # Check native exit codes explicitly, including when the caller enables this.
 $PSNativeCommandUseErrorActionPreference = $false
 
-function Write-HandoffStep([string] $Message) {
-    # Host output stays out of Git result pipelines (object IDs, status, etc.).
-    Write-Host ('[{0:HH:mm:ss}] [{1} handoff/{2}] {3}' -f (Get-Date), [Environment]::MachineName, $Action, $Message)
-}
-
 function Invoke-Git {
     param(
         [switch] $Network,
         [Parameter(ValueFromRemainingArguments)][string[]] $GitArgs
     )
     $command = 'git ' + ($GitArgs -join ' ')
-    Write-HandoffStep "START $command"
     $previousSshCommand = $env:GIT_SSH_COMMAND
     try {
         if ($IsWindows -and $Network) {
@@ -68,7 +62,6 @@ function Invoke-Git {
                 else { $sshCommand = 'ssh' }
             }
             $env:GIT_SSH_COMMAND = "unset c28fc6f98a2c44abbbd89d6a3037d0d9_POSIX_FD_STATE; $sshCommand"
-            Write-HandoffStep 'Applying Windows nested SSH workaround for this Git call.'
         }
         $result = & git -C $Repository @GitArgs
         $gitExit = $LASTEXITCODE
@@ -76,7 +69,6 @@ function Invoke-Git {
     finally {
         if ($IsWindows -and $Network) { $env:GIT_SSH_COMMAND = $previousSshCommand }
     }
-    Write-HandoffStep "END $command (exit $gitExit)"
     if ($gitExit -ne 0) {
         throw "$command failed (exit $gitExit)."
     }
@@ -91,17 +83,13 @@ function Get-RemoteSnapshot {
 }
 
 try {
-    Write-HandoffStep "Script entered. Repository: $Repository"
     if (-not $Remote) {
-        Write-HandoffStep 'START git config --get handoff.remote'
         $Remote = & git -C $Repository config --get handoff.remote
-        Write-HandoffStep "END git config --get handoff.remote (exit $LASTEXITCODE)"
         if ($LASTEXITCODE -notin @(0, 1)) { throw 'Could not read handoff.remote configuration.' }
         if (-not $Remote) {
             throw 'handoff.remote is not configured. Set it with: git config --local handoff.remote <remote-name> (or specify -Remote).'
         }
     }
-    Write-HandoffStep "Using remote: $Remote"
     if ($Ref -notlike 'refs/wip/*') { throw '-Ref must be under refs/wip/.' }
     Invoke-Git check-ref-format $Ref | Out-Null
     # Accept a configured remote name, not an option or arbitrary URL.
@@ -148,9 +136,7 @@ try {
         }
         # Read before stashing so an unavailable remote leaves local work alone.
         $expected = Get-RemoteSnapshot
-        Write-HandoffStep 'START git rev-parse --verify --quiet refs/stash'
         $previous = @(& git -C $Repository rev-parse --verify --quiet refs/stash)
-        Write-HandoffStep "END git rev-parse --verify --quiet refs/stash (exit $LASTEXITCODE; missing stash is allowed)"
         Invoke-Git stash push --include-untracked -m "handoff $([Environment]::MachineName) $([DateTimeOffset]::Now.ToString('o'))" | Out-Host
         $snapshot = [string](Invoke-Git rev-parse --verify refs/stash)
         if ($previous.Count -gt 0 -and $snapshot -eq $previous[0]) { throw 'No new stash was created.' }

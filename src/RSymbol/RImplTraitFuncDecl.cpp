@@ -17,11 +17,20 @@ RImplTraitFuncDecl::RImplTraitFuncDecl(RImplTraitDecl* implTrait, bool bSeqFunc,
 {
 }
 
-void RImplTraitFuncDecl::Init(RDeclKey&& key, vector<RTypeParam*>&& typeParams, RFuncReturn&& funcRet, RThisKind&& thisKind, vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
+void RImplTraitFuncDecl::InitTypeParams(std::vector<RTypeParam*>&& typeParams)
+{
+    genericsComp.InitTypeParams(move(typeParams));
+}
+
+void RImplTraitFuncDecl::Init(RDeclKey&& key, RFuncReturn&& funcRet, RThisKind&& thisKind, vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {
     o_key.emplace(move(key));
-    genericsComp.InitTypeParams(move(typeParams));
     commonFuncDeclComp.InitFuncSignature(move(funcRet), move(thisKind), move(funcParams), bLastParamVariadic);
+}
+
+span<RTypeParam*> RImplTraitFuncDecl::GetTypeParams()
+{
+    return genericsComp.GetTypeParams();
 }
 
 RDeclKey& RImplTraitFuncDecl::GetDeclKey()

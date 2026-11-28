@@ -76,7 +76,7 @@ SmTranslationContexts MakeTranslationContexts_LoopScope(size_t labelId, SmTransl
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.smFactory, contexts.binOpQueryService};
 }
 
-SmTranslationContexts MakeTranslationContexts_SwitchScope(optional<string>& o_label, SmTranslationContexts& contexts)
+SmTranslationContexts MakeTranslationContexts_SwitchScope(InRef<optional<string>> o_label, SmTranslationContexts& contexts)
 {
     size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
     // switch는 break만 갱신한다
@@ -84,7 +84,7 @@ SmTranslationContexts MakeTranslationContexts_SwitchScope(optional<string>& o_la
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.smFactory, contexts.binOpQueryService};
 }
 
-tuple<size_t, SmTranslationContexts> MakeTranslationContexts_InlineScope(std::optional<std::string> o_label, RType* hintType, SmTranslationContexts& contexts)
+tuple<size_t, SmTranslationContexts> MakeTranslationContexts_InlineScope(InRef<std::optional<std::string>> o_label, RType* hintType, SmTranslationContexts& contexts)
 {
     size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
 

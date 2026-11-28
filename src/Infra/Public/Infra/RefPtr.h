@@ -25,6 +25,7 @@ public:
     T* operator->() const noexcept { return ref.get(); }
 
     std::shared_ptr<T> Share() const noexcept { return ref; }
+    T* GetRawPtr() const noexcept { return ref.get(); }
 };
 
 // TakeRef<std::shared_ptr<T>> 대신에 쓰는 

@@ -49,6 +49,8 @@ SmPhaseManager::~SmPhaseManager() = default;
 
 expected<vector<MFuncBody>, DiagPtr> SmPhaseManager::Run()
 {
+    running = true;
+
     // 1. Run
     SmPhase2Context phase2Context{rFactory.get()};
     for (auto* task : phase2Tasks)
